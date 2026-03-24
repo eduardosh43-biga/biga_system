@@ -1,16 +1,11 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
 import './App.css'
+import IngredientsList from './IngredientsList'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <p style={{marginTop: '100px', color: 'black',fontSize: '100px'}}>Hola biga</p>
-    </>
+    <div>
+      <IngredientsList />
+    </div>
   )
 }
 
