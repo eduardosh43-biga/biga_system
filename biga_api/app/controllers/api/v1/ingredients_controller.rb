@@ -3,15 +3,20 @@ class Api::V1::IngredientsController < ApplicationController
   before_action :set_ingredient, only: [:show, :update, :destroy]
 
   def index
-    @ingredients = Ingredient.all
-    render json: @ingredients
-  end
+  @ingredients = Ingredient.all
+  
+  # Usamos .as_json para "inyectar" el resultado de nuestro método mágico
+  render json: @ingredients.as_json(methods: [:near_expiry?])
+end
 
   # Read: Show the ingredients
   def show
-    @ingredient = Ingredient.find(params[:id])  
-    render json: @ingredient
-  rescue ActiveRecord::RecordNotFound
+    @ingredient = Ingredient.find(params[:id])
+    render json: { 
+      ingredient: @ingredient,
+      warning_batches: @ingredient.expiring_batches
+    }
+    rescue ActiveRecord::RecordNotFound
     render json: { error: "Ingrediente no encontrado" }, status: :not_found
   end
 
@@ -42,6 +47,9 @@ class Api::V1::IngredientsController < ApplicationController
     @ingredient.destroy
     head :no_content
   end
+
+
+  
 
   private
 

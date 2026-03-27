@@ -54,7 +54,7 @@ function IngredientsList() {
 
   return (
     <div style={{ padding: '40px', maxWidth: '1000px', margin: '0 auto', fontFamily: 'system-ui' }}>
-      <h1 style={{ textAlign: 'center' }}>🍕 Maestro de Insumos - BIGA</h1>
+      <h1 className="text-4xl font-bold text-red-500">🍕 Maestro de Insumos - BIGA</h1>
 
       {/* FORMULARIO DE REGISTRO (MAESTRO) */}
       <form onSubmit={handleSubmit} style={{ 
