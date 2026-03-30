@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import Inventory from './components/Inventory';
+import Recipes from './components/Recipes';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -29,7 +30,7 @@ function App() {
           
           {activeTab === 'inventory' && <Inventory />}
 
-          {/* Iremos agregando las demás vistas poco a poco */}
+          {activeTab === 'costs' && <Recipes />}
         </div>
       </main>
     </div>

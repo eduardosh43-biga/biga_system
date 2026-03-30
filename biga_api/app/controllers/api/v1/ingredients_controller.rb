@@ -58,6 +58,6 @@ end
   end
 
   def ingredient_params
-    params.require(:ingredient).permit(:name, :unit, :stock, :minimum_stock)
+    params.require(:ingredient).permit(:name, :unit, :minimum_stock)
   end
 end

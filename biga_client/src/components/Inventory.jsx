@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Package, AlertTriangle, Plus, X, Calendar } from 'lucide-react';
+import { Package, AlertTriangle, Plus, X, Calendar, Pencil, Trash2 } from 'lucide-react';
+
 
 const Inventory = () => {
   const [ingredients, setIngredients] = useState([]);
@@ -14,6 +15,10 @@ const Inventory = () => {
   // Estados Modal 2: Gestionar Lotes
   const [selectedIng, setSelectedIng] = useState(null);
   const [batchData, setBatchData] = useState({ quantity: '', cost: '', expiry_date: '' });
+
+// Estados modal 3: Editar los cards de ingredientes
+const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+const [editingIngredient, setEditingIngredient] = useState(null);
 
   const fetchIngredients = () => {
     fetch('http://localhost:3000/api/v1/ingredients')
@@ -95,6 +100,38 @@ const Inventory = () => {
     }
   };
 
+  const handleUpdateIngredient = async (e) => {
+    e.preventDefault();
+    console.log(`starts modal for edit ingredient ${editingIngredient.name}` )
+    try {
+      const res = await fetch(`http://localhost:3000/api/v1/ingredients/${editingIngredient.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ingredient: editingIngredient })
+      });
+  
+      if (res.ok) {
+        setIsEditModalOpen(false);
+        fetchIngredients(); // Recargamos la lista
+      }
+    } catch (error) {
+      console.error("Error al actualizar:", error);
+    }
+  };
+
+  const handleDeleteIngredient = async (id) => {
+    if (window.confirm("¿Estás seguro? Si borras este insumo, se quitará de todas las recetas de BIGA.")) {
+      try {
+        const res = await fetch(`http://localhost:3000/api/v1/ingredients/${id}`, {
+          method: 'DELETE'
+        });
+        if (res.ok) fetchIngredients();
+      } catch (error) {
+        console.error("Error al eliminar:", error);
+      }
+    }
+  };
+
   if (loading) return <div className="p-10 text-center font-bold text-gray-400">Cargando almacén...</div>;
 
   return (
@@ -120,6 +157,25 @@ const Inventory = () => {
               isNearExpiry ? 'border-red-500 bg-red-50/30' : 
               isLowStock ? 'border-amber-500 bg-amber-50/30' : 'border-green-500'
             }`}>
+                <div className="flex justify-between items-center p-4 border-t border-gray-100">
+  <span className="text-xs font-bold text-gray-400 uppercase">Acciones</span>
+  
+  
+  <div className="flex gap-2">
+    <button 
+      onClick={() => { setEditingIngredient(ing); setIsEditModalOpen(true); }}
+      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+    >
+      <Pencil size={18} />
+    </button>
+    <button 
+      onClick={() => handleDeleteIngredient(ing.id)}
+      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+    >
+      <Trash2 size={18} />
+    </button>
+  </div>
+</div>
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="text-xl font-bold text-gray-800">{ing.name}</h3>
@@ -132,6 +188,7 @@ const Inventory = () => {
                   {isNearExpiry && <AlertTriangle size={20} className="text-red-600 animate-pulse" />}
                 </div>
               </div>
+    
 
               <div className="flex items-end justify-between mt-6">
                 <div className="flex items-center gap-2">
@@ -210,6 +267,8 @@ const Inventory = () => {
       </div>
 
       <div className="p-8 max-h-[80vh] overflow-y-auto">
+
+        
         
         {/* SECCIÓN 1: LISTADO DE LOTES EXISTENTES */}
         <div className="mb-10">
@@ -251,7 +310,7 @@ const Inventory = () => {
               <p className="text-center py-6 text-gray-400 italic">No hay lotes registrados para este insumo.</p>
             )}
           </div>
-        </div>
+        </div>        
 
         {/* SECCIÓN 2: FORMULARIO PARA NUEVO LOTE */}
         <div className="pt-8 border-t-2 border-dashed border-gray-100">
@@ -281,6 +340,53 @@ const Inventory = () => {
     </div>
   </div>
 )}
+{isEditModalOpen && editingIngredient && (
+        <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-md z-[70] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] p-10 w-full max-w-md shadow-2xl border-4 border-blue-500/20">
+            <h3 className="text-3xl font-black text-gray-900 mb-2 tracking-tighter uppercase italic">EDITAR INSUMO</h3>
+            <p className="text-blue-600 font-bold mb-8 text-xs tracking-widest uppercase">Actualiza los datos de {editingIngredient.name}</p>
+            
+            <form onSubmit={handleUpdateIngredient} className="space-y-5">
+              <div>
+                <label className="text-[10px] font-black text-gray-400 uppercase ml-2 mb-2 block tracking-widest">Nombre del Insumo</label>
+                <input 
+                  className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-6 py-4 outline-none focus:border-blue-500 font-bold text-gray-700"
+                  value={editingIngredient.name}
+                  onChange={e => setEditingIngredient({...editingIngredient, name: e.target.value})}
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-black text-gray-400 uppercase ml-2 mb-2 block tracking-widest">Unidad</label>
+                  <input 
+                    className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-6 py-4 outline-none focus:border-blue-500 font-bold text-gray-700"
+                    value={editingIngredient.unit}
+                    onChange={e => setEditingIngredient({...editingIngredient, unit: e.target.value})}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-gray-400 uppercase ml-2 mb-2 block tracking-widest">Stock Mínimo</label>
+                  <input 
+                    type="number" step="0.01"
+                    className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-6 py-4 outline-none focus:border-blue-500 font-bold text-gray-700"
+                    value={editingIngredient.minimum_stock}
+                    onChange={e => setEditingIngredient({...editingIngredient, minimum_stock: e.target.value})}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-4 pt-6">
+                <button type="button" onClick={() => setIsEditModalOpen(false)} className="flex-1 py-4 font-black text-gray-400 uppercase text-xs">Cancelar</button>
+                <button type="submit" className="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg">Guardar Cambios</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
