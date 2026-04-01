@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  promotion: one
+  recipe: one
+  ingredient: one
+  quantity: 1
+
+two:
+  promotion: two
+  recipe: two
+  ingredient: two
+  quantity: 1

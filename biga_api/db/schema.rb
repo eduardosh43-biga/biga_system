@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_30_194904) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_01_150710) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -80,6 +80,25 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_30_194904) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "promotion_items", force: :cascade do |t|
+    t.bigint "promotion_id", null: false
+    t.bigint "recipe_id", null: false
+    t.integer "quantity"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["promotion_id"], name: "index_promotion_items_on_promotion_id"
+    t.index ["recipe_id"], name: "index_promotion_items_on_recipe_id"
+  end
+
+  create_table "promotions", force: :cascade do |t|
+    t.string "name"
+    t.decimal "sale_price"
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "category"
+  end
+
   create_table "recipe_ingredients", force: :cascade do |t|
     t.bigint "recipe_id", null: false
     t.bigint "ingredient_id", null: false
@@ -103,6 +122,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_30_194904) do
   add_foreign_key "inventory_batches", "ingredients"
   add_foreign_key "order_items", "orders"
   add_foreign_key "order_items", "recipes"
+  add_foreign_key "promotion_items", "promotions"
+  add_foreign_key "promotion_items", "recipes"
   add_foreign_key "recipe_ingredients", "ingredients"
   add_foreign_key "recipe_ingredients", "recipes"
 end
