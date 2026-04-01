@@ -1,19 +1,33 @@
 class Recipe < ApplicationRecord
     has_many :recipe_ingredients, dependent: :destroy
     has_many :ingredients, through: :recipe_ingredients
+    has_many :promotion_items
+    has_many :promotions, through: :promotion_items
     has_one_attached :image
-  
+
     validates :name, presence: true, uniqueness: true
     validates :price, presence: true, numericality: { greater_than: 0 }
 
-    def target_margin
-        case category
-        when 'pizza' then 65
-        when 'bebida_reventa' then 30
-        when 'bebida_casa' then 75
-        else 50
-        end
-      end
+    before_destroy :check_if_used_in_promotions
+
+    # 1. Definimos la constante al principio (Fácil de editar para el verano 2026)
+  TARGET_MARGINS = {
+    'pizza' => 65,
+    'bebida_reventa' => 30,
+    'bebida_casa' => 75,
+    'cremolada' => 70, # Para tu máquina de cremoladas
+    'entrada' => 60
+  }.freeze
+
+  validates :name, presence: true, uniqueness: true
+  validates :price, presence: true, numericality: { greater_than: 0 }
+  # Validamos que la categoría esté en nuestra lista
+  validates :category, inclusion: { in: TARGET_MARGINS.keys, message: "%{value} no es una categoría válida" }, allow_nil: true
+
+  # 2. El método simplificado (No cambia el resultado, solo es más limpio)
+  def target_margin
+    TARGET_MARGINS[category] || 50
+  end
   
     # Calcula el costo sumando el último precio de cada ingrediente
     def total_cost
@@ -41,3 +55,12 @@ class Recipe < ApplicationRecord
       ((profit_margin / price) * 100).round(2)
     end
   end
+
+  private
+  
+  def check_if_used_in_promotions
+  if promotion_items.any?
+    errors.add(:base, "No puedes borrar esta receta porque es parte de una promoción activa. Quítala primero del combo.")
+    throw(:abort)
+  end
+end
