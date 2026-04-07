@@ -1,9 +1,16 @@
 class Api::V1::PromotionsController < ApplicationController
   before_action :set_promotion, only: [:show, :update, :destroy]
 
-  # GET /api/v1/promotions
-  def index
-    @promotions = Promotion.all
+  
+  def index   
+    @promotions = Promotion.includes(
+      promotion_items: { 
+        recipe: [
+        { recipe_ingredients: { ingredient: :inventory_batches } },
+        :image_attachment # <--- ESTO MATA EL N+1 DE LAS FOTOS DENTRO DE LA PROMO
+      ]
+      }
+    ).all
     render json: @promotions
   end
 

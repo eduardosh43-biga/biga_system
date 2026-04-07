@@ -2,12 +2,14 @@
 
 one:
   order: one
-  recipe: one
+  itemable: one
+  itemable_type: Itemable
   quantity: 1
   unit_price: 9.99
 
 two:
   order: two
-  recipe: two
+  itemable: two
+  itemable_type: Itemable
   quantity: 1
   unit_price: 9.99
