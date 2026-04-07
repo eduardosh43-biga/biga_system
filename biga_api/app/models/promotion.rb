@@ -11,9 +11,9 @@ class Promotion < ApplicationRecord
 
   # 1. Sumamos el costo de todas las recetas incluidas
   def total_cost
-    promotion_items.includes(:recipe).sum do |pi|
-      (pi.recipe&.total_cost || 0) * pi.quantity
-    end.to_f.round(2)
+    @total_cost ||= promotion_items.to_a.sum do |item| 
+      (item.recipe&.total_cost || 0) * item.quantity 
+    end
   end
 
   # 2. Calculamos el margen real del combo
@@ -22,7 +22,6 @@ class Promotion < ApplicationRecord
     ((sale_price - total_cost) / sale_price * 100).round(2)
   end
 
-  # 3. Semáforo de rentabilidad (las promos suelen tener margen menor que platos sueltos)
   def status_health
     margin_percentage >= 45 ? 'rentable' : 'revisar_costos'
   end

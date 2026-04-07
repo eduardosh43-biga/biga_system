@@ -9,8 +9,7 @@ class RecipeIngredientSerializer < ActiveModel::Serializer
     object.ingredient&.unit || "un"
   end
 
-  def subtotal
-    last_price = object.ingredient&.inventory_batches&.last&.cost_per_unit || 0
-    (object.quantity.to_f * last_price.to_f).round(2)
+  def subtotal 
+    object.subtotal
   end
 end

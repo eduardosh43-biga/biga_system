@@ -8,34 +8,22 @@ class Ingredient < ApplicationRecord
   
     before_save :format_name
   
-    # 1. Calculamos el stock sumando los lotes reales
-    def stock
-      inventory_batches.sum(:quantity)
-    end
+    
+  def stock    
+    inventory_batches.to_a.sum { |batch| batch.quantity || 0 }
+  end
   
-    # 2. Renombramos: quitamos el "?" para que sea fácil de leer en JS
-    def near_expiry
-      inventory_batches.where("expiry_date <= ?", 10.days.from_now).exists?
-    end
+    
+  def near_expiry
+    limit_date = 5.days.from_now    
+    inventory_batches.to_a.any? { |batch| batch.expiry_date.present? && batch.expiry_date <= limit_date }
+  end
 
-    def low_stock
-        # Si el stock actual es igual o menor al mínimo establecido
-        stock <= minimum_stock
-      end
-  
-    # 3. Este es el truco para que React reciba todo servido en bandeja
-    def as_json(options = {})
-  super(options.merge(
-    methods: [:stock, :near_expiry, :low_stock],
-    include: { 
-      inventory_batches: { 
-        only: [:id, :quantity, :cost_per_unit, :expiry_date] 
-      }
-    }
-  ))
-end
-  
-    private
+  def low_stock
+    stock <= minimum_stock
+  end
+   
+  private
   
     def format_name
       self.name = name.strip.titleize if name.present?

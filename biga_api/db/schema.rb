@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_01_150710) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_01_163842) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -63,19 +63,26 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_01_150710) do
 
   create_table "order_items", force: :cascade do |t|
     t.bigint "order_id", null: false
-    t.bigint "recipe_id", null: false
+    t.string "itemable_type", null: false
+    t.bigint "itemable_id", null: false
     t.integer "quantity"
     t.decimal "unit_price"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["itemable_type", "itemable_id"], name: "index_order_items_on_itemable"
     t.index ["order_id"], name: "index_order_items_on_order_id"
-    t.index ["recipe_id"], name: "index_order_items_on_recipe_id"
   end
 
   create_table "orders", force: :cascade do |t|
+    t.string "order_type"
+    t.integer "daily_id"
     t.string "customer_name"
-    t.string "status"
+    t.string "table_number"
+    t.string "delivery_address"
+    t.decimal "delivery_fee"
     t.decimal "total_price"
+    t.string "status"
+    t.string "payment_method"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -121,7 +128,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_01_150710) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "inventory_batches", "ingredients"
   add_foreign_key "order_items", "orders"
-  add_foreign_key "order_items", "recipes"
   add_foreign_key "promotion_items", "promotions"
   add_foreign_key "promotion_items", "recipes"
   add_foreign_key "recipe_ingredients", "ingredients"
