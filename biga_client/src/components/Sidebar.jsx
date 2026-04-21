@@ -1,43 +1,36 @@
-import { Home, Package, ShoppingCart, ChefHat, TrendingUp, LayoutGrid } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
 
-const Sidebar = ({ activeTab, setActiveTab }) => {
-  const menuItems = [
-    { id: 'dashboard', icon: <Home size={20} />, label: 'Resumen' },
-    { id: 'orders', icon: <ShoppingCart size={20} />, label: 'Pedidos' },
-    { id: 'kitchen', icon: <ChefHat size={20} />, label: 'Cocina' },
-    { id: 'inventory', icon: <Package size={20} />, label: 'Inventario' },
-    { id: 'costs', icon: <TrendingUp size={20} />, label: 'Costos y Menú' },
-    { id: 'tables', icon: <LayoutGrid size={20} />, label: 'Mesas' },
-  ];
+const Sidebar = () => {
+  const activeStyle = "bg-red-600 text-white shadow-md";
+  const idleStyle = "text-gray-400 hover:bg-gray-100";
 
   return (
-    <div className="h-screen w-64 bg-gray-900 text-white flex flex-col fixed left-0 top-0">
-      <div className="p-6">
-        <h1 className="text-2xl font-black text-red-500 tracking-tighter">BIGA PIZZA</h1>
-        <p className="text-xs text-gray-400 uppercase tracking-widest mt-1">Gestión de Inventario</p>
-      </div>
+    <aside className="w-64 bg-white h-screen fixed left-0 top-0 border-r border-gray-200 p-6">
+      <h1 className="text-2xl font-black text-red-600 mb-10">BIGA PIZZA</h1>
+      
+      <nav className="space-y-2">
+        <NavLink 
+          to="/orders" 
+          className={({ isActive }) => `flex items-center gap-3 p-3 rounded-xl font-bold transition-all ${isActive ? activeStyle : idleStyle}`}
+        >
+          <span>📋</span> Pedidos
+        </NavLink>
 
-      <nav className="flex-1 px-4 space-y-2">
-        {menuItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setActiveTab(item.id)}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-              activeTab === item.id 
-                ? 'bg-red-600 text-white' 
-                : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-            }`}
-          >
-            {item.icon}
-            <span className="font-medium">{item.label}</span>
-          </button>
-        ))}
+        <NavLink 
+          to="/inventory" 
+          className={({ isActive }) => `flex items-center gap-3 p-3 rounded-xl font-bold transition-all ${isActive ? activeStyle : idleStyle}`}
+        >
+          <span>📦</span> Inventario
+        </NavLink>
+
+        <NavLink 
+          to="/costs" 
+          className={({ isActive }) => `flex items-center gap-3 p-3 rounded-xl font-bold transition-all ${isActive ? activeStyle : idleStyle}`}
+        >
+          <span>🍕</span> Costos y Menú
+        </NavLink>
       </nav>
-
-      <div className="p-4 border-t border-gray-800">
-        <p className="text-sm text-gray-500">Tacna, Perú • 2026</p>
-      </div>
-    </div>
+    </aside>
   );
 };
 

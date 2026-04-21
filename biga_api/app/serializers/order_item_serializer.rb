@@ -1,19 +1,15 @@
-class PromotionItemSerializer < ActiveModel::Serializer
-  attributes :id, :quantity, :item_name, :item_type, :unit_cost
+class OrderItemSerializer < ActiveModel::Serializer
+  # Nota el cambio de nombre de la clase arriba ^
+  attributes :id, :itemable_id, :itemable_type, :item_name, :quantity, :unit_price, :subtotal
 
   def item_name
-    object.recipe&.name || object.ingredient&.name
+    # Gracias al polimorfismo, esto traerá el nombre 
+    # ya sea de la Receta o de la Promoción
+    object.itemable&.name || "Producto desconocido"
   end
 
-  def item_type
-    object.recipe_id.present? ? 'Receta' : 'Ingrediente'
-  end
-
-  def unit_cost
-    if object.recipe.present?
-      object.recipe.total_cost
-    else
-      object.ingredient.inventory_batches.last&.cost_per_unit || 0
-    end
+  def subtotal
+    # Llama al método que creamos en el modelo OrderItem
+    object.subtotal
   end
 end

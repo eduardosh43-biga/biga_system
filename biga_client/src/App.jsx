@@ -1,39 +1,45 @@
-import { useState } from 'react';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+
+// Componentes
 import Sidebar from './components/Sidebar';
-import Inventory from './components/Inventory';
-import Recipes from './components/Recipes';
 
-function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+// Páginas (Basado en tu nueva estructura de carpetas)
+import Inventory from './pages/inventory/Inventory';
+import Menu from './pages/menu/Menu';
+import Orders from './pages/orders/Orders';
+import OrdersNew from './pages/orders/OrdersNew';
 
+// El Layout mantiene el Sidebar fijo
+const Layout = () => {
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      {/* Barra Lateral Fija */}
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-
-      {/* Contenido Principal (con margen a la izquierda para no taparse con el sidebar) */}
+    <div className="flex min-h-screen bg-slate-50 text-slate-900">
+      <Sidebar />
       <main className="flex-1 ml-64 p-8">
-        <header className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-800 capitalize">
-            {activeTab.replace('-', ' ')}
-          </h2>
-        </header>
-
-        {/* Zona donde "inyectaremos" las vistas según el tab activo */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 min-h-[500px]">
-          {activeTab === 'dashboard' && (
-            <div className="text-center py-20">
-              <h3 className="text-xl text-gray-600">Bienvenido a BIGA, Eduardo.</h3>
-              <p className="text-gray-400">Selecciona una opción del menú para empezar.</p>
-            </div>
-          )}
-          
-          {activeTab === 'inventory' && <Inventory />}
-
-          {activeTab === 'costs' && <Recipes />}
-        </div>
+        <Outlet />
       </main>
     </div>
+  );
+};
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        {/* Usamos el Layout para las páginas con Sidebar */}
+        <Route element={<Layout />}>
+          {/* CAMBIO CLAVE: Si entras a "/", te manda a "/orders" */}
+          <Route path="/" element={<Navigate to="/orders" replace />} />
+          
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/inventory" element={<Inventory />} />
+          <Route path="/costs" element={<Menu />} />
+        </Route>
+
+        {/* Ruta para el punto de venta (sin Sidebar) */}
+        <Route path="/orders/new" element={<OrdersNew />} />
+      </Routes>
+    </Router>
   );
 }
 

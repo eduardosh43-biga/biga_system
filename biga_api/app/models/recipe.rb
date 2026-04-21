@@ -4,7 +4,7 @@ class Recipe < ApplicationRecord
     'pizza' => 65,
     'bebida_reventa' => 30,
     'bebida_casa' => 75,
-    'cremolada' => 70, 
+    'postre' => 60,
     'entrada' => 60
   }.freeze
 
