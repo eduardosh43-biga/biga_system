@@ -5,12 +5,12 @@ Rails.application.routes.draw do
      resources :ingredients, only: [:index, :show, :create, :update, :destroy]
      resources :recipes, only: [:index, :show, :create, :update, :destroy]
      resources :recipe_ingredients, only: [:index, :show, :create, :update, :destroy]
-     resources :orders, only: [:index, :show, :create, :update] do
+     resources :orders, only: [:index, :show, :create, :update, :destroy] do
         member do
           patch :cancel
         end
      end
-     resources :order_items, only: [:index, :show, :create, :update, :destroy]
+    #  resources :order_items, only: [:index, :show, :create, :update, :destroy]
      resources :promotions, only: [:index, :show, :create, :update, :destroy]
      resources :promotion_items, only: [:index, :show, :create, :update, :destroy]
     end

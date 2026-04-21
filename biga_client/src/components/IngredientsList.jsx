@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 
 function IngredientsList() {
-  const [ingredients, setIngredients] = useState([]);
-  
-  // Estado para la "Ficha Técnica" del nuevo insumo
+  const [ingredients, setIngredients] = useState([]);  
+
   const [formData, setFormData] = useState({
     name: '',
     unit: 'kg',
-    stock: 0,           // Stock inicial (usualmente 0)
-    minimum_stock: 0    // El punto de reorden
+    stock: 0,
+    minimum_stock: 0    
   });
 
   useEffect(() => {

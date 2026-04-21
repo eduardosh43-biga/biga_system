@@ -1,18 +1,17 @@
-class PromotionSerializer < ActiveModel::Serializer
-  attributes :id, :name, :sale_price, :description, :total_cost, :margin_percentage, :status_health
+class OrderSerializer < ActiveModel::Serializer
+  attributes :id, :daily_id, :customer_name, :order_type, :delivery_fee, :total_price, :status, :created_at
+  
+  has_many :order_items
+end
 
-  # Incluimos los detalles de los items para saber qué pizzas lleva el combo
-  has_many :promotion_items
+class OrderItemSerializer < ActiveModel::Serializer
+  attributes :id, :quantity, :unit_price, :subtotal, :item_name
 
-  def total_cost
-    object.total_cost
+  def item_name
+    object.itemable&.name || "Producto"
   end
 
-  def margin_percentage
-    object.margin_percentage
-  end
-
-  def status_health
-    object.status_health
+  def subtotal
+    object.subtotal
   end
 end
