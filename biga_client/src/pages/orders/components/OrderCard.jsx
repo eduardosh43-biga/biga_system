@@ -1,9 +1,10 @@
 import React from 'react';
-import { Trash2, Edit3, Clock} from 'lucide-react';
+import { Trash2, Edit3, Clock, Eye } from 'lucide-react';
 
 
-const OrderCard = ({ order, onDelete, onEdit, onComplete }) => {
-    const isPending = order.status === 'pending';
+
+const OrderCard = ({ order, onDelete, onEdit, onComplete, onDetail }) => {
+    const canManage = order.status === 'pending' || order.status === 'ready';
 
     const getTimerStyle = (mins) => {
         if (mins >= 20) return "text-red-600 text-[12px] animate-bounce font-black"; // Crítico
@@ -22,14 +23,17 @@ const OrderCard = ({ order, onDelete, onEdit, onComplete }) => {
     const minutos = calcularMinutos(order.created_at);
     return (
         <div className="relative bg-white shadow-xl rounded-sm border-t-[8px] border-slate-900 p-5 flex flex-col overflow-hidden">
-            {/* Chincheta */}
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-400 rounded-full border-2 border-slate-600 z-10"></div>
-
             {/* Header Interno: El Status se queda ADENTRO */}
             <div className="flex justify-between items-start mb-4 border-b border-dashed border-slate-200 pb-3">
                 <div className="max-w-[70%]">
+                    <div className="flex items-center gap-2 mb-1">
                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Ticket #{order.daily_id}</span>
-                    {isPending && (
+                        <span className={`px-1.5 py-0.5 rounded-[4px] text-[8px] font-black uppercase tracking-widest ${order.order_type === 'delivery' ? 'bg-amber-500 text-white' : 'bg-slate-900 text-white'
+                            }`}>
+                            {order.order_type === 'mesa' ? `Mesa ${order.table_number}` : order.order_type}
+                        </span>
+                    </div>
+                    {canManage && (
                         <div className="flex items-center gap-1 mb-2">
                             <Clock size={12} className={getTimerStyle(minutos)} />
                             <span className={`text-[10px] uppercase tracking-widest ${getTimerStyle(minutos)}`}>
@@ -42,11 +46,12 @@ const OrderCard = ({ order, onDelete, onEdit, onComplete }) => {
                     </h3>
                 </div>
                 {/* Badge de Status: Estilo compacto y contenido */}
-                <div className={`px-2 py-0.5 rounded text-[8px] font-black uppercase border shrink-0 ${isPending ? 'bg-red-50 text-red-600 border-red-200' :
+                <div className={`px-2 py-0.5 rounded text-[9px] font-black uppercase border shrink-0 ${order.status === 'ready' ? 'bg-blue-500 text-white border-blue-500' :
+                    order.status === 'pending' ? 'bg-amber-100 text-amber-600 border-amber-200' :
                         order.status === 'completed' ? 'bg-green-50 text-green-600 border-green-100' :
                             'bg-slate-50 text-slate-400 border-slate-100'
                     }`}>
-                    {order.status}
+                    {order.status === 'ready' ? '¡LISTO!' : order.status}
                 </div>
             </div>
 
@@ -92,7 +97,7 @@ const OrderCard = ({ order, onDelete, onEdit, onComplete }) => {
             </div>
 
             {/* ACCIONES CONDICIONALES: Solo si es Pendiente */}
-            {isPending ? (
+            {canManage ? (
                 <div className="space-y-2">
                     <div className="grid grid-cols-2 gap-2">
                         <button onClick={() => onEdit(order)} className="flex items-center justify-center gap-1 p-2 bg-blue-50 text-blue-600 rounded-lg text-[9px] font-black uppercase hover:bg-blue-200 transition-colors">
@@ -111,9 +116,19 @@ const OrderCard = ({ order, onDelete, onEdit, onComplete }) => {
                 </div>
             ) : (
                 /* Vista de Historial: Solo un mensaje informativo */
-                <div className="text-center py-2 bg-slate-50 rounded-lg">
-                    <span className="text-[8px] font-black text-slate-400 uppercase italic">Registro Finalizado</span>
-                </div>
+                    <div className="space-y-2">
+                        <button
+                            onClick={() => onDetail(order)}
+                            className="w-full flex items-center justify-center gap-2 p-3 bg-slate-100 text-slate-700 rounded-xl text-[10px] font-black uppercase hover:bg-slate-200 transition-all border border-slate-200"
+                        >
+                            <Eye size={14} /> Ver Detalle Completo
+                        </button>
+                        <div className="text-center">
+                            <span className="text-[8px] font-black text-slate-400 uppercase italic">
+                                {order.status === 'completed' ? 'Venta Cerrada' : 'Pedido Anulado'}
+                            </span>
+                        </div>
+                    </div>
             )}
 
             {/* Corte de papel */}
