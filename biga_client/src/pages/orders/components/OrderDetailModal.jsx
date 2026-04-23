@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Printer, CreditCard, MapPin, Hash, ExternalLink } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 
 const OrderDetailModal = ({ isOpen, order, onClose }) => {
     if (!isOpen || !order) return null;
@@ -63,13 +64,13 @@ const OrderDetailModal = ({ isOpen, order, onClose }) => {
                                     <MapPin size={14} className="text-red-600" />
                                     <span className="text-[10px] font-black uppercase text-red-600">Dirección de Entrega</span>
                                 </div>
-                                <a
+                                {/* <a
                                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.delivery_address + ", Tacna, Peru")}`}
                                     target="_blank" rel="noreferrer"
                                     className="bg-blue-600 text-white text-[8px] font-black px-2 py-1 flex items-center gap-1"
                                 >
                                     <ExternalLink size={10} /> GOOGLE MAPS
-                                </a>
+                                </a> */}
                             </div>
                             <p className="text-[13px] font-black uppercase leading-tight">
                                 {order.delivery_address || "No especificada"}
@@ -131,6 +132,21 @@ const OrderDetailModal = ({ isOpen, order, onClose }) => {
                         </div>
                     </div>
                 </div>
+                <div className="mt-8 p-4 border-2 border-dashed border-slate-300 flex flex-col items-center text-center">
+                    <p className="text-[10px] font-black uppercase mb-2">¿Te gustó la pizza? 🍕</p>
+
+                    <QRCodeSVG
+                        value="https://g.page/r/CTeOapit2Z3REBE/review"
+                        size={80}
+                        level={"H"}
+                    // includeMargin={true}
+                    />
+
+                    <p className="text-[9px] font-bold mt-2 text-slate-500 uppercase leading-tight">
+                        Escanea, déjanos un review <br />
+                        y obtén <span className="text-red-600 font-black">10% Descuento</span> en tu próxima visita
+                    </p>
+                </div>
 
                 {/* Botón de Impresión */}
                 <div className="px-8 pb-12 pt-4">
@@ -140,7 +156,7 @@ const OrderDetailModal = ({ isOpen, order, onClose }) => {
                     >
                         <Printer size={16} /> Re-imprimir Comanda
                     </button>
-                    <p className="text-[8px] text-center text-slate-400 mt-4 uppercase">Gracias por elegir BIGA · Pizza Artesanal</p>
+                    <p className="text-[8px] text-center text-slate-400 mt-4 uppercase">Gracias por elegir BIGA · Pizzas Artesanales</p>
                 </div>
 
                 {/* Efecto Zig-Zag inferior */}
@@ -154,4 +170,4 @@ const OrderDetailModal = ({ isOpen, order, onClose }) => {
     );
 };
 
-export default OrderDetailModal;
+export default OrderDetailModal; 
