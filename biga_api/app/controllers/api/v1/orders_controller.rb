@@ -2,11 +2,9 @@ class Api::V1::OrdersController < ApplicationController
   before_action :set_order, only: %i[ show update destroy ]
 
   def index  
-  @orders = Order.includes(:order_items).order(created_at: :desc)
+  @orders = Order.includes(order_items: :itemable).order(created_at: :desc)
 
-  render json: @orders.as_json(include: { 
-    order_items: { include: :itemable } 
-  })
+  render json: @orders
   end
    
   def show
@@ -17,6 +15,13 @@ class Api::V1::OrdersController < ApplicationController
   def create
     @order = Order.new(order_params)
     if @order.save
+
+      serialized_order = ActiveModelSerializers::Adapter::Json.new(
+      OrderSerializer.new(@order)
+    ).serializable_hash
+    
+    ActionCable.server.broadcast("kitchen_channel", serialized_order)
+    
       render json: @order, status: :created
     else
       render json: { errors: @order.errors.full_messages }, status: :unprocessable_entity

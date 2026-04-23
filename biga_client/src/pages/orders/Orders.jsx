@@ -11,12 +11,12 @@ const Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const pendingOrders = orders
-    .filter(o => o.status === 'pending')
+    .filter(o => o.status === 'pending' || o.status === "ready")
     .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
   // 2. Historial: Lo último que se despachó o anuló arriba
   const historyOrders = orders
-    .filter(o => o.status !== 'pending')
+    .filter(o => o.status !== 'pending' && o.status !== 'ready')
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
   // 1. CARGAR ÓRDENES
@@ -137,7 +137,7 @@ const Orders = () => {
               onDetail={handleDetail}
               onDelete={handleDelete}
               onEdit={handleEdit}
-              onComplete={handleComplete} // Nueva función
+              onComplete={handleComplete}
             />
           ))}
         </div>
@@ -147,13 +147,13 @@ const Orders = () => {
       <section className="opacity-75">
         <h2 className="text-xl font-black tracking-tighter uppercase mb-8 text-slate-500">Historial Reciente</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {historyOrders.slice(0.,8).map(order => (
+          {historyOrders.slice(0, 8).map(order => (
             <OrderCard
               key={order.id}
               order={order}
               onDetail={handleDetail}
               onDelete={handleDelete}
-            // En historial quizás no queremos editar o completar
+
             />
           ))}
         </div>
@@ -177,6 +177,11 @@ const Orders = () => {
           </div>
         </div>
       )}
+      <OrderDetailModal
+        isOpen={isDetailOpen}
+        onClose={() => setIsDetailOpen(false)}
+        order={selectedOrder}
+      />
     </div>
   );
 }
