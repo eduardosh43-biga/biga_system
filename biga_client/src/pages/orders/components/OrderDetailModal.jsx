@@ -144,7 +144,7 @@ const OrderDetailModal = ({ isOpen, order, onClose }) => {
 
                     <p className="text-[9px] font-bold mt-2 text-slate-500 uppercase leading-tight">
                         Escanea, déjanos un review <br />
-                        y obtén <span className="text-red-600 font-black">10% Descuento</span> en tu próxima visita
+                        y obtén <span className="text-red-600 font-black">20% Descuento</span> en tu próxima compra
                     </p>
                 </div>
 
