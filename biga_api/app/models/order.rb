@@ -2,7 +2,7 @@ class Order < ApplicationRecord
   has_many :order_items, dependent: :destroy
   accepts_nested_attributes_for :order_items, allow_destroy: true
 
-  validates :order_type, presence: true, inclusion: { in: %w[mesa recojo delivery merma] }
+  validates :order_type, presence: true, inclusion: { in: %w[mesa recojo delivery merma personal] }
   validates :status, inclusion: { in: %w[pending ready completed cancelled] }
   
   before_create :set_daily_id

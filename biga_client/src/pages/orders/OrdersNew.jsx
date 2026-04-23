@@ -87,7 +87,7 @@ const OrdersNew = () => {
                     itemable_type: item.isPromo ? 'Promotion' : 'Recipe',
                     quantity: item.quantity,
                     // Si es merma, el precio unitario es 0 para no inflar tus ventas
-                    unit_price: orderType === 'merma' ? 0 : item.price
+                    unit_price: orderType === 'merma' || "personal" ? 0 : item.price
                 }))
             }
         };

@@ -63,7 +63,7 @@ const OrderCard = ({ order, onDelete, onEdit, onComplete, onDetail }) => {
                         <div key={idx} className="flex justify-between items-start leading-tight">
                             <span className="pr-2">
                                 <span className="font-black text-slate-900 mr-1">{item.quantity}x</span>
-                                {item.itemable?.name || item.itemable_name}
+                                {item.itemable?.name || item.item_name}
 
                                 {item.quantity > 1 && (
                                     <span className="text-[9px] text-slate-400 block ml-5">
