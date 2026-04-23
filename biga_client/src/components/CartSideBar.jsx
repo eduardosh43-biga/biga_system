@@ -55,7 +55,7 @@ const CartSideBar = ({
                                 <div key={item.id} className={cardStyle}>
                                     <div className="flex justify-between items-start mb-3">
                                         <span className="font-black text-slate-900 uppercase text-xs leading-tight">{item.name}</span>
-                                        <button onClick={() => setCart(prev => prev.filter(i => i.id !== item.id))} className="text-slate-300 hover:text-red-500"><Trash2 size={14} /></button>
+                                        <button onClick={() => setCart(prev => prev.filter(i => i.id !== item.id))} className="text-red-600 hover:animate-bounce"><Trash2 size={14} /></button>
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <div className="flex items-center gap-3 bg-slate-100 rounded-xl p-1">

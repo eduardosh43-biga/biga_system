@@ -14,6 +14,7 @@ const OrdersNew = () => {
   const [tableNumber, setTableNumber] = useState("");
   const [deliveryAddress,setDeliveryAddress] = useState("");
   const [deliveryFee,setDeliveryFee] = useState("");
+    const [mermaReason, setMermaReason] = useState("")
 
 
   const [searchParams] = useSearchParams();
@@ -85,9 +86,8 @@ const OrdersNew = () => {
                     id: item.order_item_id, // Para que Rails sepa si editar uno existente
                     itemable_id: item.id,
                     itemable_type: item.isPromo ? 'Promotion' : 'Recipe',
-                    quantity: item.quantity,
-                    // Si es merma, el precio unitario es 0 para no inflar tus ventas
-                    unit_price: orderType === 'merma' || "personal" ? 0 : item.price
+                    quantity: item.quantity,                    
+                    unit_price: (orderType === 'merma' || orderType === 'personal') ? 0 : item.price
                 }))
             }
         };
@@ -141,6 +141,7 @@ const OrdersNew = () => {
           setTableNumber={setTableNumber}
           setDeliveryAddress={setDeliveryAddress}
           setDeliveryFee={setDeliveryFee}
+                  setMermaReason={setMermaReason}
         />
       </div>
     </div>
