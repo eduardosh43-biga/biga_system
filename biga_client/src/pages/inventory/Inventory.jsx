@@ -135,7 +135,7 @@ const Inventory = () => {
   if (loading) return <div className="p-10 text-center font-bold text-gray-400">Cargando almacén...</div>;
 
   return (
-    <div className="relative">
+    <div className="relative ml-4 mt-4">
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-3xl font-black text-gray-800">Almacén de Insumos</h2>
         <button 

@@ -19,7 +19,7 @@ import Staff from './pages/staff/Staff';
 // El Layout mantiene el Sidebar fijo
 const Layout = () => {
   return (
-    <div className="flex min-h-screen bg-slate-200 text-slate-900 no-scrollbar">
+    <div className="flex min-h-screen text-slate-900 no-scrollbar">
       <Sidebar />
       <main className="flex-1 ml-64 p-2 no-scrollbar min-h-screen">
         <Outlet />
@@ -35,23 +35,23 @@ function App() {
         {/* Ruta Pública */}
         <Route path="/login" element={<Login />} />
 
-        {/* Rutas Protegidas */}
+        {/* Rutas Protegidas (Cualquier usuario logueado) */}
         <Route element={<ProtectedRoute />}>
-          {/* Ruta Inicial (Sin Sidebar) */}
           <Route path="/" element={<Home />} />
-          
-          {/* Rutas con Sidebar */}
-          <Route element={<Layout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/orders" element={<Orders />} />
-            <Route path="/inventory" element={<Inventory />} />
-            <Route path="/costs" element={<Menu />} />
-            <Route path="/kitchen" element={<Kitchen />} />
-            <Route path="/staff" element={<Staff />} />
-          </Route>
-
-          {/* Ruta para el punto de venta (sin Sidebar pero protegida) */}
           <Route path="/orders/new" element={<OrdersNew />} />
+          
+          <Route element={<Layout />}>
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/kitchen" element={<Kitchen />} />
+
+            {/* Rutas solo para ADMIN */}
+            <Route element={<ProtectedRoute adminOnly={true} />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/inventory" element={<Inventory />} />
+              <Route path="/costs" element={<Menu />} />
+              <Route path="/staff" element={<Staff />} />
+            </Route>
+          </Route>
         </Route>
 
         {/* Redirigir cualquier otra ruta no definida al inicio o login */}

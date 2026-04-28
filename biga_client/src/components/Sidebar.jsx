@@ -22,12 +22,15 @@ const Sidebar = () => {
         </Link>
 
         <nav className="space-y-2">
-          <NavLink 
-            to="/dashboard" 
-            className={({ isActive }) => `flex items-center gap-4 p-3 rounded-2xl font-bold transition-all duration-300 ${isActive ? 'bg-[#f5821f] text-white shadow-lg shadow-orange-500/20 scale-105' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
-          >
-            <span className="text-xl">📊</span> Dashboard
-          </NavLink>
+          {JSON.parse(localStorage.getItem('user') || '{}').role === 'admin' && (
+            <NavLink 
+              to="/dashboard" 
+              className={({ isActive }) => `flex items-center gap-4 p-3 rounded-2xl font-bold transition-all duration-300 ${isActive ? 'bg-[#f5821f] text-white shadow-lg shadow-orange-500/20 scale-105' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
+            >
+              <span className="text-xl">📊</span> Dashboard
+            </NavLink>
+          )}
+          
           <NavLink 
             to="/orders" 
             className={({ isActive }) => `flex items-center gap-4 p-3 rounded-2xl font-bold transition-all duration-300 ${isActive ? 'bg-[#f5821f] text-white shadow-lg shadow-orange-500/20 scale-105' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
@@ -40,27 +43,30 @@ const Sidebar = () => {
           >
             <span className="text-xl">🔪</span> Cocina
           </NavLink>
-          <NavLink 
-            to="/inventory" 
-            className={({ isActive }) => `flex items-center gap-4 p-3 rounded-2xl font-bold transition-all duration-300 ${isActive ? 'bg-[#f5821f] text-white shadow-lg shadow-orange-500/20 scale-105' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
-          >
-            <span className="text-xl">📦</span> Inventario
-          </NavLink>
-
-          <NavLink 
-            to="/costs" 
-            className={({ isActive }) => `flex items-center gap-4 p-3 rounded-2xl font-bold transition-all duration-300 ${isActive ? 'bg-[#f5821f] text-white shadow-lg shadow-orange-500/20 scale-105' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
-          >
-            <span className="text-xl">🍕</span> Costos y Menú
-          </NavLink>
 
           {JSON.parse(localStorage.getItem('user') || '{}').role === 'admin' && (
-            <NavLink 
-              to="/staff" 
-              className={({ isActive }) => `flex items-center gap-4 p-3 rounded-2xl font-bold transition-all duration-300 ${isActive ? 'bg-[#f5821f] text-white shadow-lg shadow-orange-500/20 scale-105' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
-            >
-              <span className="text-xl">👥</span> Staff
-            </NavLink>
+            <>
+              <NavLink 
+                to="/inventory" 
+                className={({ isActive }) => `flex items-center gap-4 p-3 rounded-2xl font-bold transition-all duration-300 ${isActive ? 'bg-[#f5821f] text-white shadow-lg shadow-orange-500/20 scale-105' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
+              >
+                <span className="text-xl">📦</span> Inventario
+              </NavLink>
+
+              <NavLink 
+                to="/costs" 
+                className={({ isActive }) => `flex items-center gap-4 p-3 rounded-2xl font-bold transition-all duration-300 ${isActive ? 'bg-[#f5821f] text-white shadow-lg shadow-orange-500/20 scale-105' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
+              >
+                <span className="text-xl">🍕</span> Costos y Menú
+              </NavLink>
+
+              <NavLink 
+                to="/staff" 
+                className={({ isActive }) => `flex items-center gap-4 p-3 rounded-2xl font-bold transition-all duration-300 ${isActive ? 'bg-[#f5821f] text-white shadow-lg shadow-orange-500/20 scale-105' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
+              >
+                <span className="text-xl">👥</span> Staff
+              </NavLink>
+            </>
           )}
         </nav>
       </div>

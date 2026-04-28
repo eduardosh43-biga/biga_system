@@ -80,7 +80,7 @@ const Staff = () => {
   if (loading) return <div className="p-20 text-center font-black text-slate-400 animate-pulse">CARGANDO EQUIPO...</div>;
 
   return (
-    <div className="p-8 max-w-6xl mx-auto bg-slate-300">
+    <div className="p-8 max-w-6xl mx-auto">
       <header className="flex justify-between items-end mb-12 border-b-2 border-slate-100 pb-8">
         <div>
           <h1 className="text-5xl font-black text-biga-dark tracking-tighter uppercase italic">

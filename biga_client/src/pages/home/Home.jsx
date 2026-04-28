@@ -73,7 +73,7 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-300 p-8 lg:p-16">
+    <div className="min-h-screen p-8 lg:p-16">
       <header className="max-w-6xl mx-auto mb-16 flex justify-between items-center">
         <div>
           <h1 className="text-6xl font-black text-biga-dark italic tracking-tighter uppercase">
