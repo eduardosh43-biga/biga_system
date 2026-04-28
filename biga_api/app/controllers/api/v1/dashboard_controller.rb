@@ -24,18 +24,19 @@ class Api::V1::DashboardController < ApplicationController
                                 .where(orders: { status: 'completed', created_at: start_date..end_date })
                                 .group(:itemable_type, :itemable_id)
                                 .select('itemable_type, itemable_id, SUM(quantity) as total_qty')
-                                .order('total_qty DESC')
+                                .order('SUM(quantity) DESC')
 
     top_products = sales_by_product.limit(5).map do |sp|
       item = sp.itemable_type.constantize.find_by(id: sp.itemable_id)
-      { name: item&.name, quantity: sp.total_qty, type: sp.itemable_type }
+      { name: item&.name, quantity: sp.total_qty.to_f, type: sp.itemable_type }
     end
 
     # 5. Top Peores (Menos vendidos por categoría)
-    worst_pizza = get_least_sold_data(sales_by_product, ['pizza'])
-    worst_drink = get_least_sold_data(sales_by_product, ['bebida_casa', 'bebida_reventa'])
-    worst_other = get_least_sold_data(sales_by_product, ['postre', 'entrada'])
-    worst_promo = get_least_sold_promo_data(sales_by_product)
+    # Pasamos las fechas para que las funciones hagan sus propias consultas limpias
+    worst_pizza = get_least_sold_data(start_date, end_date, ['pizza'])
+    worst_drink = get_least_sold_data(start_date, end_date, ['bebida_casa', 'bebida_reventa'])
+    worst_other = get_least_sold_data(start_date, end_date, ['postre', 'entrada'])
+    worst_promo = get_least_sold_promo_data(start_date, end_date)
 
     # 6. Comparativa Mes Anterior
     prev_start = start_date - 1.month
@@ -81,38 +82,51 @@ class Api::V1::DashboardController < ApplicationController
     end
   end
 
-  def get_least_sold_data(sales_scope, categories)
+  def get_least_sold_data(start_date, end_date, categories)
     all_items = Recipe.where(category: categories)
     return { name: "N/A", quantity: 0 } if all_items.empty?
 
-    # Buscar items con 0 ventas
-    sold_item_ids = sales_scope.where(itemable_type: 'Recipe', itemable_id: all_items.pluck(:id)).pluck(:itemable_id)
-    unsold_items = all_items.where.not(id: sold_item_ids)
+    # 1. Buscamos qué se vendió en este rango para estas categorías
+    sales_by_item = OrderItem.joins(:order)
+                             .where(orders: { status: 'completed', created_at: start_date..end_date })
+                             .where(itemable_type: 'Recipe', itemable_id: all_items.pluck(:id))
+                             .group(:itemable_id)
+                             .select('itemable_id, SUM(quantity) as total_qty')
+
+    # 2. Identificar productos con 0 ventas
+    sold_ids = sales_by_item.pluck(:itemable_id)
+    unsold_items = all_items.where.not(id: sold_ids)
 
     if unsold_items.any?
       return { name: unsold_items.first.name, quantity: 0 }
     end
 
-    # Si todos se vendieron, buscar el de menor cantidad
-    res = sales_scope.where(itemable_type: 'Recipe', itemable_id: all_items.pluck(:id)).reorder('total_qty ASC').first
+    # 3. Si todos se vendieron, buscamos el de menor cantidad (SQL explícito para evitar alias erróneos)
+    res = sales_by_item.order('SUM(quantity) ASC').first
     return { name: "N/A", quantity: 0 } unless res
 
     item = Recipe.find_by(id: res.itemable_id)
     { name: item&.name || "N/A", quantity: res.total_qty.to_f }
   end
 
-  def get_least_sold_promo_data(sales_scope)
+  def get_least_sold_promo_data(start_date, end_date)
     all_promos = Promotion.all
     return { name: "N/A", quantity: 0 } if all_promos.empty?
 
-    sold_promo_ids = sales_scope.where(itemable_type: 'Promotion').pluck(:itemable_id)
-    unsold_promos = all_promos.where.not(id: sold_promo_ids)
+    sales_by_promo = OrderItem.joins(:order)
+                              .where(orders: { status: 'completed', created_at: start_date..end_date })
+                              .where(itemable_type: 'Promotion')
+                              .group(:itemable_id)
+                              .select('itemable_id, SUM(quantity) as total_qty')
+
+    sold_ids = sales_by_promo.pluck(:itemable_id)
+    unsold_promos = all_promos.where.not(id: sold_ids)
 
     if unsold_promos.any?
       return { name: unsold_promos.first.name, quantity: 0 }
     end
 
-    res = sales_scope.where(itemable_type: 'Promotion').reorder('total_qty ASC').first
+    res = sales_by_promo.order('SUM(quantity) ASC').first
     return { name: "N/A", quantity: 0 } unless res
 
     item = Promotion.find_by(id: res.itemable_id)

@@ -15,6 +15,7 @@ Rails.application.routes.draw do
     #  resources :order_items, only: [:index, :show, :create, :update, :destroy]
      resources :promotions, only: [:index, :show, :create, :update, :destroy]
      resources :promotion_items, only: [:index, :show, :create, :update, :destroy]
+     resources :users, only: [:index, :create, :destroy]
     end
   end
  
