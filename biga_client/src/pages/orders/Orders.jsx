@@ -104,7 +104,7 @@ const Orders = () => {
   };
 
   return (
-    <div className="p-8 bg-slate-50 min-h-screen ml-4">
+    <div className="p-8 bg-slate-300 min-h-screen ml-4">
       <div className="flex justify-between items-end mb-12 border-b-2 border-slate-100 pb-8">
         <div>
           <h1 className="text-5xl font-black text-biga-dark tracking-tighter uppercase leading-none italic">
