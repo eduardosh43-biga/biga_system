@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Package, AlertTriangle, Plus, X, Calendar, Pencil, Trash2 } from 'lucide-react';
-
+import api from '../../assets/services/api';
 
 const Inventory = () => {
   const [ingredients, setIngredients] = useState([]);
@@ -10,70 +10,75 @@ const Inventory = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [name, setName] = useState('');
   const [unit, setUnit] = useState('kg');
-  const [minimumStock, setMinimumStock] = useState(0); // <--- Estado para el mínimo
+  const [minimumStock, setMinimumStock] = useState(0); 
 
   // Estados Modal 2: Gestionar Lotes
   const [selectedIng, setSelectedIng] = useState(null);
   const [batchData, setBatchData] = useState({ quantity: '', cost: '', expiry_date: '' });
 
-// Estados modal 3: Editar los cards de ingredientes
-const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-const [editingIngredient, setEditingIngredient] = useState(null);
+  // Estados modal 3: Editar los cards de ingredientes
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingIngredient, setEditingIngredient] = useState(null);
 
-  const fetchIngredients = () => {
-    fetch('http://localhost:3000/api/v1/ingredients')
-      .then(res => res.json())
-      .then(data => {
+  const fetchIngredients = async () => {
+    try {
+      const res = await api('/ingredients');
+      if (res && res.ok) {
+        const data = await res.json();
         setIngredients(data);
-        setLoading(false);
-      });
+      }
+    } catch (error) {
+      console.error("Error fetching ingredients:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => { fetchIngredients(); }, []);
+  useEffect(() => { 
+    fetchIngredients(); 
+  }, []);
 
   const handleSaveIngredient = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:3000/api/v1/ingredients', {
+      const response = await api('/ingredients', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ingredient: { name, unit, minimum_stock: minimumStock } })
+        body: { ingredient: { name, unit, minimum_stock: minimumStock } }
       });
-      if (response.ok) {
+      if (response && response.ok) {
         setIsModalOpen(false);
         setName('');
         setMinimumStock(0);
-        fetchIngredients();
+        await fetchIngredients();
       }
-    } catch (error) { console.error(error); }
+    } catch (error) { 
+      console.error(error); 
+    }
   };
 
   const handleSaveBatch = async (e) => {
     e.preventDefault();
-  
-    // 1. Calculamos el costo unitario (Costo Total / Cantidad)
     const calculatedUnitPrice = parseFloat(batchData.cost) / parseFloat(batchData.quantity);
   
     const payload = {
       inventory_batch: {
         ingredient_id: selectedIng.id,
         quantity: batchData.quantity,
-        cost_per_unit: calculatedUnitPrice.toFixed(2), // <--- ¡Aquí ocurre la magia!
+        cost_per_unit: calculatedUnitPrice.toFixed(2),
         expiry_date: batchData.expiry_date
       }
     };
   
     try {
-      const response = await fetch('http://localhost:3000/api/v1/inventory_batches', {
+      const response = await api('/inventory_batches', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: payload
       });
   
-      if (response.ok) {
+      if (response && response.ok) {
         setSelectedIng(null);
         setBatchData({ quantity: '', cost: '', expiry_date: '' });
-        fetchIngredients();
+        await fetchIngredients();
       }
     } catch (error) {
       console.error("Error al registrar lote:", error);
@@ -84,15 +89,12 @@ const [editingIngredient, setEditingIngredient] = useState(null);
     if (!window.confirm("¿Seguro que quieres eliminar este lote? El stock se restará automáticamente.")) return;
   
     try {
-      const response = await fetch(`http://localhost:3000/api/v1/inventory_batches/${batchId}`, {
+      const response = await api(`/inventory_batches/${batchId}`, {
         method: 'DELETE'
       });
   
-      if (response.ok) {
-        // Recargamos los ingredientes para que el stock se actualice en la tarjeta principal
-        fetchIngredients();
-        // También necesitamos actualizar el modal actual. 
-        // Una forma rápida es cerrar el modal o volver a buscar el ingrediente específico.
+      if (response && response.ok) {
+        await fetchIngredients();
         setSelectedIng(null); 
       }
     } catch (error) {
@@ -102,17 +104,15 @@ const [editingIngredient, setEditingIngredient] = useState(null);
 
   const handleUpdateIngredient = async (e) => {
     e.preventDefault();
-    console.log(`starts modal for edit ingredient ${editingIngredient.name}` )
     try {
-      const res = await fetch(`http://localhost:3000/api/v1/ingredients/${editingIngredient.id}`, {
+      const res = await api(`/ingredients/${editingIngredient.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ingredient: editingIngredient })
+        body: { ingredient: editingIngredient }
       });
   
-      if (res.ok) {
+      if (res && res.ok) {
         setIsEditModalOpen(false);
-        fetchIngredients(); // Recargamos la lista
+        await fetchIngredients();
       }
     } catch (error) {
       console.error("Error al actualizar:", error);
@@ -122,10 +122,10 @@ const [editingIngredient, setEditingIngredient] = useState(null);
   const handleDeleteIngredient = async (id) => {
     if (window.confirm("¿Estás seguro? Si borras este insumo, se quitará de todas las recetas de BIGA.")) {
       try {
-        const res = await fetch(`http://localhost:3000/api/v1/ingredients/${id}`, {
+        const res = await api(`/ingredients/${id}`, {
           method: 'DELETE'
         });
-        if (res.ok) fetchIngredients();
+        if (res && res.ok) await fetchIngredients();
       } catch (error) {
         console.error("Error al eliminar:", error);
       }
@@ -140,7 +140,8 @@ const [editingIngredient, setEditingIngredient] = useState(null);
         <h2 className="text-3xl font-black text-gray-800">Almacén de Insumos</h2>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="bg-red-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-red-200"
+          style={{ backgroundColor: '#f5821f' }}
+          className="text-white px-8 py-4 rounded-2xl font-black shadow-xl hover:bg-[#1a1a1a] transition-all flex items-center gap-2 uppercase text-xs active:scale-95"
         >
           <Plus size={20} className="inline mr-2" /> Nuevo Insumo
         </button>

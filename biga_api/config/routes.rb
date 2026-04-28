@@ -1,7 +1,9 @@
 Rails.application.routes.draw do  
   namespace :api do
     namespace :v1 do
-     resources :inventory_batches, only: [:index, :show, :create, :update, :destroy]
+      post 'auth/login', to: 'authentication#login'
+      get 'dashboard/stats', to: 'dashboard#stats'
+      resources :inventory_batches, only: [:index, :show, :create, :update, :destroy]
      resources :ingredients, only: [:index, :show, :create, :update, :destroy]
      resources :recipes, only: [:index, :show, :create, :update, :destroy]
      resources :recipe_ingredients, only: [:index, :show, :create, :update, :destroy]

@@ -5,6 +5,7 @@ import Sidebar from '../../components/Sidebar';
 import CartSideBar from '../../components/CartSideBar';
 import Menu from '../menu/Menu'; 
 import { ArrowLeft } from 'lucide-react';
+import api from '../../assets/services/api';
 
 const OrdersNew = () => {
   const navigate = useNavigate();
@@ -14,43 +15,38 @@ const OrdersNew = () => {
   const [tableNumber, setTableNumber] = useState("");
   const [deliveryAddress,setDeliveryAddress] = useState("");
   const [deliveryFee,setDeliveryFee] = useState("");
-    const [mermaReason, setMermaReason] = useState("")
-
+  const [mermaReason, setMermaReason] = useState("")
 
   const [searchParams] = useSearchParams();
   const editId = searchParams.get('edit_id');
 
-    useEffect(() => {
-        if (editId) {
-            // Si hay un edit_id, pedimos los datos a la API
-            const loadOrderToEdit = async () => {
-                try {
-                    const res = await fetch(`http://localhost:3000/api/v1/orders/${editId}`);
-                    const data = await res.json();
-
-                    // Llenamos los estados con lo que trajo Rails
-                    setCustomerName(data.customer_name);
-                    setOrderType(data.order_type);
-
-                    // Convertimos los items al formato que entiende tu carrito
-                    const loadedCart = data.order_items.map(item => ({
-                        id: item.itemable_id, // ID de la Pizza o Promo
-                        order_item_id: item.id, // ID del registro en la tabla intermedia (IMPORTANTE)
-                        name: item.itemable_name,
-                        price: item.unit_price,
-                        quantity: item.quantity,
-                        isPromo: item.itemable_type === 'Promotion'
-                    }));
-                    setCart(loadedCart);
-                } catch (error) {
-                    console.error("Error cargando pedido para editar", error);
-                }
-            };
-            loadOrderToEdit();
+  useEffect(() => {
+    if (editId) {
+      const loadOrderToEdit = async () => {
+        try {
+          const res = await api(`/orders/${editId}`);
+          if (res && res.ok) {
+            const data = await res.json();
+            setCustomerName(data.customer_name);
+            setOrderType(data.order_type);
+            const loadedCart = data.order_items.map(item => ({
+              id: item.itemable_id,
+              order_item_id: item.id,
+              name: item.itemable_name,
+              price: item.unit_price,
+              quantity: item.quantity,
+              isPromo: item.itemable_type === 'Promotion'
+            }));
+            setCart(loadedCart);
+          }
+        } catch (error) {
+          console.error("Error cargando pedido para editar", error);
         }
-    }, [editId]); // Este efecto solo corre cuando el editId cambia
+      };
+      loadOrderToEdit();
+    }
+  }, [editId]);
 
-  // Función para capturar los clicks del menú
   const handleAddToCart = (item) => {
     setCart(prev => {
       const exists = prev.find(i => i.id === item.id);
@@ -62,54 +58,44 @@ const OrdersNew = () => {
     });
   };
 
-    const handleSubmit = async () => {
-        const method = editId ? "PATCH" : "POST";
-        const url = editId
-            ? `http://localhost:3000/api/v1/orders/${editId}`
-            : "http://localhost:3000/api/v1/orders";
+  const handleSubmit = async () => {
+    const method = editId ? "PATCH" : "POST";
+    const endpoint = editId ? `/orders/${editId}` : "/orders";
 
-        // Preparamos los datos según tu SCHEMA
-        const orderData = {
-            order: {
-                // Lógica de nombre: Si es merma, guardamos la razón ahí
-                customer_name: orderType === 'merma' ? `MERMA: ${mermaReason}` : customerName,
-                order_type: orderType,
-                status: 'pending',
-
-                // Campos específicos del Schema (solo se envían si corresponden)
-                table_number: orderType === 'mesa' ? tableNumber : null,
-                delivery_address: orderType === 'delivery' ? deliveryAddress : null,
-                delivery_fee: orderType === 'delivery' ? parseFloat(deliveryFee || 0) : 0,
-
-                // Atributos anidados para los productos
-                order_items_attributes: cart.map(item => ({
-                    id: item.order_item_id, // Para que Rails sepa si editar uno existente
-                    itemable_id: item.id,
-                    itemable_type: item.isPromo ? 'Promotion' : 'Recipe',
-                    quantity: item.quantity,                    
-                    unit_price: (orderType === 'merma' || orderType === 'personal') ? 0 : item.price
-                }))
-            }
-        };
-
-        try {
-            const response = await fetch(url, {
-                method: method,
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(orderData)
-            });
-
-            if (response.ok) {
-                // No cambiamos el estilo de los mensajes de éxito
-                navigate('/orders');
-            } else {
-                const errorData = await response.json();
-                console.error("Error del servidor:", errorData);
-            }
-        } catch (error) {
-            console.error("Error de conexión:", error);
-        }
+    const orderData = {
+      order: {
+        customer_name: orderType === 'merma' ? `MERMA: ${mermaReason}` : customerName,
+        order_type: orderType,
+        status: 'pending',
+        table_number: orderType === 'mesa' ? tableNumber : null,
+        delivery_address: orderType === 'delivery' ? deliveryAddress : null,
+        delivery_fee: orderType === 'delivery' ? parseFloat(deliveryFee || 0) : 0,
+        order_items_attributes: cart.map(item => ({
+          id: item.order_item_id,
+          itemable_id: item.id,
+          itemable_type: item.isPromo ? 'Promotion' : 'Recipe',
+          quantity: item.quantity,                    
+          unit_price: (orderType === 'merma' || orderType === 'personal') ? 0 : item.price
+        }))
+      }
     };
+
+    try {
+      const response = await api(endpoint, {
+        method: method,
+        body: orderData
+      });
+
+      if (response && response.ok) {
+        navigate('/orders');
+      } else if (response) {
+        const errorData = await response.json();
+        console.error("Error del servidor:", errorData);
+      }
+    } catch (error) {
+      console.error("Error de conexión:", error);
+    }
+  };
 
   return (
     <div className="flex h-screen bg-slate-100 overflow-hidden">

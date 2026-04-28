@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import KitchenCard from './components/KitchenCard';
 import { RefreshCcw } from 'lucide-react';
 import { createConsumer } from '@rails/actioncable';
+import api from '../../assets/services/api';
 
 const Kitchen = () => {
     const [orders, setOrders] = useState([]);
@@ -9,16 +10,20 @@ const Kitchen = () => {
 
     const fetchKitchenOrders = async () => {
         try {
-            const res = await fetch("http://localhost:3000/api/v1/orders");
-            const data = await res.json();
-            // FILTRO CRÍTICO: Solo lo que la cocina debe ver
-            const onlyPending = data.filter(o => o.status === 'pending');
-            setOrders(onlyPending);
-            setLoading(false);
+            const res = await api("/orders");
+
+            if (res && res.ok) {
+                const data = await res.json();
+                // FILTRO CRÍTICO: Solo lo que la cocina debe ver
+                const onlyPending = data.filter(o => o.status === 'pending');
+                setOrders(onlyPending);
+            }
         } catch (error) {
             console.error("Error en cocina:", error);
+        } finally {
+            setLoading(false);
         }
-    };
+    }
    
     useEffect(() => {
         fetchKitchenOrders();
@@ -29,12 +34,7 @@ const Kitchen = () => {
         const subscription = consumer.subscriptions.create('KitchenChannel', {
             received: (data) => {
                 console.log("¡Nueva orden recibida!", data);
-
-                // 3. Agregamos la orden al inicio de la lista
                 setOrders(prev => [data.order, ...prev]);
-
-                // 4. EL SONIDO (La magia)
-                // playNotificationSound();
             }
         });
         return () => {
@@ -45,12 +45,11 @@ const Kitchen = () => {
 
     const handleMarkAsReady = async (id) => {
         try {
-            const res = await fetch(`http://localhost:3000/api/v1/orders/${id}`, {
+            const res = await api(`/orders/${id}`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ order: { status: 'ready' } }) // Lo pasamos a 'ready'
+                body: { order: { status: 'ready' } }
             });
-            if (res.ok) fetchKitchenOrders();
+            if (res && res.ok) await fetchKitchenOrders();
         } catch (error) {
             console.error("Error al despachar:", error);
         }

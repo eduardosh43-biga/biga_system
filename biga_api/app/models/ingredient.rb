@@ -10,38 +10,45 @@ class Ingredient < ApplicationRecord
   
     
   def stock    
-    inventory_batches.to_a.sum { |batch| batch.quantity || 0 }
+    inventory_batches.sum(:quantity)
   end
-  
-    
+
+  def latest_cost
+    inventory_batches.order(created_at: :desc).first&.cost_per_unit || 0.0
+  end
+
   def near_expiry
     limit_date = 5.days.from_now    
-    inventory_batches.to_a.any? { |batch| batch.expiry_date.present? && batch.expiry_date <= limit_date }
+    inventory_batches.any? { |batch| batch.expiry_date.present? && batch.expiry_date <= limit_date }
   end
 
   def low_stock
     stock <= minimum_stock
   end
-
+  
   def subtract_stock(amount_to_remove)
     remaining = amount_to_remove.to_f
-    
-    batches = inventory_batches.where("quantity > 0")
-                               .order(expiry_date: :asc, created_at: :asc)
+    total_cost_consumed = 0.0
 
-    batches.each do |batch|
-      break if remaining <= 0
-      
-      if batch.quantity >= remaining
-        # El lote tiene suficiente para cubrir todo lo que falta
-        batch.update(quantity: batch.quantity - remaining)
-        remaining = 0
-      else
-        # El lote no alcanza, lo dejamos en 0 y seguimos con el siguiente lote
-        remaining -= batch.quantity
-        batch.update(quantity: 0)
+    # Usamos una transacción con bloqueo para evitar errores en ventas simultáneas
+    ActiveRecord::Base.transaction do
+      # Bloqueamos los lotes que tienen stock para que nadie más los toque hasta terminar
+      batches = inventory_batches.where("quantity > 0")
+                                 .order(expiry_date: :asc, created_at: :asc)
+                                 .lock("FOR UPDATE")
+
+      batches.each do |batch|
+        break if remaining <= 0
+        
+        consumed = [batch.quantity, remaining].min
+        total_cost_consumed += consumed * batch.cost_per_unit
+        
+        batch.update!(quantity: batch.quantity - consumed)
+        remaining -= consumed
       end
     end
+    
+    total_cost_consumed.round(2)
   end
    
   private

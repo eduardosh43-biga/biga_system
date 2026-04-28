@@ -3,14 +3,16 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-
 
 // Componentes
 import Sidebar from './components/Sidebar';
+import ProtectedRoute from './components/ProtectedRoute';
 
-// Páginas (Basado en tu nueva estructura de carpetas)
+// Páginas
 import Inventory from './pages/inventory/Inventory';
 import Menu from './pages/menu/Menu';
 import Orders from './pages/orders/Orders';
 import OrdersNew from './pages/orders/OrdersNew';
 import Kitchen from './pages/kitchen/Kitchen';
-
+import Login from './pages/login/Login';
+import Dashboard from './pages/dashboard/Dashboard';
 
 // El Layout mantiene el Sidebar fijo
 const Layout = () => {
@@ -28,19 +30,27 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Usamos el Layout para las páginas con Sidebar */}
-        <Route element={<Layout />}>
-          {/* CAMBIO CLAVE: Si entras a "/", te manda a "/orders" */}
-          <Route path="/" element={<Navigate to="/orders" replace />} />
-          
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/inventory" element={<Inventory />} />
-          <Route path="/costs" element={<Menu />} />
-          <Route path="/kitchen" element={<Kitchen />} />
+        {/* Ruta Pública */}
+        <Route path="/login" element={<Login />} />
+
+        {/* Rutas Protegidas */}
+        <Route element={<ProtectedRoute />}>
+          {/* Rutas con Sidebar */}
+          <Route element={<Layout />}>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/inventory" element={<Inventory />} />
+            <Route path="/costs" element={<Menu />} />
+            <Route path="/kitchen" element={<Kitchen />} />
+          </Route>
+
+          {/* Ruta para el punto de venta (sin Sidebar pero protegida) */}
+          <Route path="/orders/new" element={<OrdersNew />} />
         </Route>
 
-        {/* Ruta para el punto de venta (sin Sidebar) */}
-        <Route path="/orders/new" element={<OrdersNew />} />
+        {/* Redirigir cualquier otra ruta no definida al inicio o login */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );

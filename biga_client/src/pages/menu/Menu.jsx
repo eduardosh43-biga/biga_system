@@ -5,6 +5,7 @@ import RecipeModal from "./components/RecipeModal";
 import IngredientModal from "./components/IngredientModal";
 import PromoModal from "./components/PromoModal";
 import { Pizza, Star, Utensils, GlassWater, BottleWine, CakeSlice, Plus } from "lucide-react";
+import api from "../../assets/services/api";
 
 const Menu = ({ viewMode = "admin", onItemClick }) => {
   const [recipes, setRecipes] = useState([]);
@@ -12,7 +13,6 @@ const Menu = ({ viewMode = "admin", onItemClick }) => {
   const [ingredients, setIngredients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("pizza");
-  const [selectedPromo, setSelectedPromo] = useState(null);
 
   // Estados de control para Modales
   const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false);
@@ -30,20 +30,34 @@ const Menu = ({ viewMode = "admin", onItemClick }) => {
     { id: "postre", label: "Postres", icon: <CakeSlice size={16} /> },
   ];
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { 
+    fetchData(); 
+  }, []);
 
   const fetchData = async () => {
-    try {
+    try {      
       const [resRec, resIng, resProm] = await Promise.all([
-        fetch("http://localhost:3000/api/v1/recipes"),
-        fetch("http://localhost:3000/api/v1/ingredients"),
-        fetch("http://localhost:3000/api/v1/promotions"),
+        api("/recipes"),
+        api("/ingredients"),
+        api("/promotions")
       ]);
-      setRecipes(await resRec.json());
-      setIngredients(await resIng.json());
-      setPromotions(await resProm.json());
+
+      if (resRec?.ok && resIng?.ok && resProm?.ok) {
+        const [recipesData, ingredientsData, promotionsData] = await Promise.all([
+          resRec.json(),
+          resIng.json(),
+          resProm.json()
+        ]);
+
+        setRecipes(recipesData);
+        setIngredients(ingredientsData);
+        setPromotions(promotionsData);
+      }
+    } catch (error) {
+      console.error("Error cargando datos de BIGA:", error);
+    } finally {
       setLoading(false);
-    } catch (error) { console.error(error); }
+    }
   };
 
   const handleCardClick = (item) => {
@@ -59,18 +73,18 @@ const Menu = ({ viewMode = "admin", onItemClick }) => {
     }
   };
 
-  const handleDelete = async (id, isPromo) => { // <--- Agregamos isPromo
-    const type = isPromo ? "promotions" : "recipes"; // Define la ruta correcta
+  const handleDelete = async (id, isPromo) => {
+    const type = isPromo ? "promotions" : "recipes";
     const label = isPromo ? "esta Promoción" : "este Producto";
 
     if (window.confirm(`¿Seguro que quieres eliminar ${label} de BIGA?`)) {
       try {
-        const res = await fetch(`http://localhost:3000/api/v1/${type}/${id}`, {
+        const res = await api(`/${type}/${id}`, {
           method: "DELETE"
         });
 
-        if (res.ok) {
-          fetchData(); // Refresca la lista
+        if (res && res.ok) {
+          await fetchData();
         } else {
           alert("Error al eliminar");
         }
@@ -98,9 +112,10 @@ const Menu = ({ viewMode = "admin", onItemClick }) => {
         {viewMode === "admin" && (
           <button
             onClick={() => activeCategory === "promotion" ? setIsPromoModalOpen(true) : setIsRecipeModalOpen(true)}
-            className="bg-red-600 text-white px-8 py-4 rounded-2xl font-black shadow-xl uppercase text-sm flex items-center gap-2"
+            style={{ backgroundColor: '#f5821f' }}
+            className="text-white px-8 py-4 rounded-2xl font-black shadow-xl hover:bg-[#1a1a1a] transition-all flex items-center gap-3 uppercase text-xs active:scale-95"
           >
-            <Plus size={20} /> Nuevo {activeCategory === "promotion" ? "Combo" : "Producto"}
+            <Plus size={20} /> {activeCategory === "promotion" ? "Nueva Promo" : "Nuevo Producto"}
           </button>
         )}
       </div>
