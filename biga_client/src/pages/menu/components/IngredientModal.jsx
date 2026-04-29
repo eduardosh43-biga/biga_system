@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { X, Trash2 } from "lucide-react";
+import api from "../../../assets/services/api";
 
 const IngredientModal = ({ selectedRecipe, setSelectedRecipe, ingredients, fetchData }) => {
     const [addIng, setAddIng] = useState({ ingredient_id: "", quantity: "" });
@@ -9,29 +10,34 @@ const IngredientModal = ({ selectedRecipe, setSelectedRecipe, ingredients, fetch
     const handleAdd = async (e) => {
         e.preventDefault();
         try {
-            const res = await fetch("http://localhost:3000/api/v1/recipe_ingredients", {
+            const res = await api("/recipe_ingredients", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ recipe_ingredient: { ...addIng, recipe_id: selectedRecipe.id } }),
+                body: { recipe_ingredient: { ...addIng, recipe_id: selectedRecipe.id } },
             });
-            if (res.ok) {
+            if (res && res.ok) {
                 const updated = await res.json();
                 setSelectedRecipe(updated);
                 setAddIng({ ingredient_id: "", quantity: "" });
-                fetchData();
+                await fetchData();
             }
-        } catch (error) { console.error(error); }
+        } catch (error) { 
+            console.error(error); 
+        }
     };
 
     const handleDelete = async (id) => {
         try {
-            const res = await fetch(`http://localhost:3000/api/v1/recipe_ingredients/${id}`, { method: "DELETE" });
-            if (res.ok) {
-                const resRec = await fetch(`http://localhost:3000/api/v1/recipes/${selectedRecipe.id}`);
-                setSelectedRecipe(await resRec.json());
-                fetchData();
+            const res = await api(`/recipe_ingredients/${id}`, { method: "DELETE" });
+            if (res && res.ok) {
+                const resRec = await api(`/recipes/${selectedRecipe.id}`);
+                if (resRec && resRec.ok) {
+                    setSelectedRecipe(await resRec.json());
+                }
+                await fetchData();
             }
-        } catch (error) { console.error(error); }
+        } catch (error) { 
+            console.error(error); 
+        }
     };
 
     return (

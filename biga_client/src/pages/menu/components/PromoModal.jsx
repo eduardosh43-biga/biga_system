@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X, Trash2 } from "lucide-react";
+import api from "../../../assets/services/api";
 
 const PromoModal = ({ isOpen, onClose, fetchData, promoToEdit, recipes }) => {
     const [promo, setPromo] = useState({ name: "", sale_price: "", promotion_items_attributes: [] });
@@ -21,17 +22,21 @@ const PromoModal = ({ isOpen, onClose, fetchData, promoToEdit, recipes }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const url = promoToEdit ? `http://localhost:3000/api/v1/promotions/${promoToEdit.id}` : "http://localhost:3000/api/v1/promotions";
+        const url = promoToEdit ? `/promotions/${promoToEdit.id}` : "/promotions";
         const method = promoToEdit ? "PATCH" : "POST";
 
         try {
-            const res = await fetch(url, {
+            const res = await api(url, {
                 method,
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ promotion: promo }),
+                body: { promotion: promo },
             });
-            if (res.ok) { fetchData(); onClose(); }
-        } catch (error) { console.error(error); }
+            if (res && res.ok) { 
+                await fetchData(); 
+                onClose(); 
+            }
+        } catch (error) { 
+            console.error(error); 
+        }
     };
 
     const handleRemoveItem = (index) => {

@@ -1,4 +1,18 @@
 @import "tailwindcss";
+
+@theme {
+  --color-biga-orange: #f5821f;
+  --color-biga-dark: #1a1a1a;
+  --color-biga-slate: #374151;
+  --color-biga-cream: #fdfcf0;
+}
+
+@layer base {
+  body {
+    @apply bg-slate-300;
+  }
+}
+
 /* Ocultar barra de scroll en Chrome, Safari y Opera */
 .no-scrollbar::-webkit-scrollbar {
     display: none;

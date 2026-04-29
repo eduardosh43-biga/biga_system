@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
+import api from "../../../assets/services/api";
 
 const RecipeModal = ({ isOpen, onClose, fetchData, recipeToEdit }) => {
     const [recipe, setRecipe] = useState({ name: "", price: "", category: "pizza" });
@@ -14,19 +15,18 @@ const RecipeModal = ({ isOpen, onClose, fetchData, recipeToEdit }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const url = recipeToEdit
-            ? `http://localhost:3000/api/v1/recipes/${recipeToEdit.id}`
-            : "http://localhost:3000/api/v1/recipes";
+            ? `/recipes/${recipeToEdit.id}`
+            : "/recipes";
 
         const method = recipeToEdit ? "PATCH" : "POST";
 
         try {
-            const res = await fetch(url, {
+            const res = await api(url, {
                 method,
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ recipe }),
+                body: { recipe },
             });
-            if (res.ok) {
-                fetchData();
+            if (res && res.ok) {
+                await fetchData();
                 onClose();
             }
         } catch (error) {

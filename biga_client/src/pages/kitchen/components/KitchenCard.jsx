@@ -54,7 +54,8 @@ const KitchenCard = ({ order, onReady }) => {
             <div className="p-4 pt-0">
                 <button
                     onClick={() => onReady(order.id)}
-                    className="w-full bg-green-500 hover:bg-green-600 active:scale-95 transition-all text-white py-3.5 rounded-2xl flex items-center justify-center gap-2"
+                    style={{ backgroundColor: '#f5821f' }}
+                    className="w-full hover:bg-[#1a1a1a] active:scale-95 transition-all text-white py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-orange-500/10"
                 >
                     <CheckCircle size={18} strokeWidth={3} />
                     <span className="text-xs font-black uppercase tracking-widest">¡Listo!</span>

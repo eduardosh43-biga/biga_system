@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import KitchenCard from './components/KitchenCard';
 import { RefreshCcw } from 'lucide-react';
 import { createConsumer } from '@rails/actioncable';
+import api from '../../assets/services/api';
 
 const Kitchen = () => {
     const [orders, setOrders] = useState([]);
@@ -9,16 +10,20 @@ const Kitchen = () => {
 
     const fetchKitchenOrders = async () => {
         try {
-            const res = await fetch("http://localhost:3000/api/v1/orders");
-            const data = await res.json();
-            // FILTRO CRÍTICO: Solo lo que la cocina debe ver
-            const onlyPending = data.filter(o => o.status === 'pending');
-            setOrders(onlyPending);
-            setLoading(false);
+            const res = await api("/orders");
+
+            if (res && res.ok) {
+                const data = await res.json();
+                // FILTRO CRÍTICO: Solo lo que la cocina debe ver
+                const onlyPending = data.filter(o => o.status === 'pending');
+                setOrders(onlyPending);
+            }
         } catch (error) {
             console.error("Error en cocina:", error);
+        } finally {
+            setLoading(false);
         }
-    };
+    }
    
     useEffect(() => {
         fetchKitchenOrders();
@@ -29,12 +34,7 @@ const Kitchen = () => {
         const subscription = consumer.subscriptions.create('KitchenChannel', {
             received: (data) => {
                 console.log("¡Nueva orden recibida!", data);
-
-                // 3. Agregamos la orden al inicio de la lista
                 setOrders(prev => [data.order, ...prev]);
-
-                // 4. EL SONIDO (La magia)
-                // playNotificationSound();
             }
         });
         return () => {
@@ -45,12 +45,11 @@ const Kitchen = () => {
 
     const handleMarkAsReady = async (id) => {
         try {
-            const res = await fetch(`http://localhost:3000/api/v1/orders/${id}`, {
+            const res = await api(`/orders/${id}`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ order: { status: 'ready' } }) // Lo pasamos a 'ready'
+                body: { order: { status: 'ready' } }
             });
-            if (res.ok) fetchKitchenOrders();
+            if (res && res.ok) await fetchKitchenOrders();
         } catch (error) {
             console.error("Error al despachar:", error);
         }
@@ -59,17 +58,19 @@ const Kitchen = () => {
     if (loading) return <div className="p-20 text-center font-black text-slate-400 italic">CALENTANDO EL HORNO...</div>;
 
     return (
-        <div className="min-h-screen bg-slate-900 p-8 no-scrollbar">
-            <header className="flex justify-between items-center mb-10 border-b-4 border-red-600 pb-6">
+        <div className="min-h-screen bg-biga-dark p-8 no-scrollbar rounded-3xl m-2">
+            <header className="flex justify-between items-center mb-10 border-b-2 border-biga-orange/30 pb-6">
                 <div>
-                    <h1 className="text-5xl font-black text-white italic tracking-tighter">COCINA BIGA</h1>
-                    <p className="text-red-500 font-bold uppercase text-xs tracking-widest mt-1">Producción en tiempo real</p>
+                    <h1 className="text-5xl font-black text-white italic tracking-tighter uppercase">
+                        Cocina<span className="text-biga-orange">.</span>
+                    </h1>
+                    <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em] mt-2">Producción en tiempo real</p>
                 </div>
                 <button
                     onClick={fetchKitchenOrders}
-                    className="p-4 bg-slate-800 text-white rounded-2xl hover:bg-slate-700 transition-all"
+                    className="p-4 bg-white/5 text-white rounded-2xl hover:bg-biga-orange/20 hover:text-biga-orange border border-white/5 transition-all group"
                 >
-                    <RefreshCcw size={24} />
+                    <RefreshCcw size={24} className="group-hover:rotate-180 transition-transform duration-500" />
                 </button>
             </header>
 
