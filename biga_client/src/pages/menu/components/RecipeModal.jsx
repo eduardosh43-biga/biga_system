@@ -80,7 +80,7 @@ const RecipeModal = ({ isOpen, onClose, fetchData, recipeToEdit }) => {
                             onChange={(e) => setRecipe({ ...recipe, price: e.target.value })}
                         />
                     </div>
-                    <button type="submit" className="w-full bg-gray-900 text-white py-4 rounded-2xl font-black uppercase shadow-lg">
+                    <button type="submit" className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-orange-200 hover:scale-[1.02] transition-all">
                         {recipeToEdit ? "Guardar Cambios" : "Crear Plato"}
                     </button>
                 </form>

@@ -6,69 +6,73 @@ const ProductCard = ({ item, viewMode, onClick, onEdit, onDelete }) => {
     const isHealthy = item.status_health === "rentable";
     const priceToShow = isPromo ? item.sale_price : item.price;
 
-    const cardColor = isHealthy ? "border-green-500 bg-green-50/20" : "border-amber-500 bg-amber-50/20";
-    const textColor = isHealthy ? "text-green-600" : "text-amber-600";
-    const itemKey = isPromo ? `promo-${item.id}` : `recipe-${item.id}`;
+    const cardBorder = isHealthy ? "border-emerald-500" : "border-amber-500";
+    const marginBg = isHealthy ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700";
 
     return (
         <div
             onClick={() => onClick(item)}
-            className={`bg-white border-l-[12px] rounded-[2rem] p-8 cursor-pointer hover:shadow-2xl transition-all group relative shadow-sm ${cardColor}`}
+            className={`bg-white border-l-[6px] rounded-[2rem] cursor-pointer hover:shadow-2xl transition-all group relative shadow-lg overflow-hidden flex flex-col ${cardBorder}`}
         >
-            <div className="flex justify-between items-start mb-6">
-                <div className={`p-3 rounded-xl ${isHealthy ? "bg-green-100 text-green-600" : "bg-amber-100 text-amber-600"}`}>
-                    {isPromo ? <Star size={24} className="text-yellow-500" /> : <ChefHat size={24} />}
-                </div>
-                <div className="text-right">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">P. Venta</p>
-                    <p className="text-2xl font-black text-gray-900">S/ {priceToShow}</p>
-                </div>
-            </div>
-
-            <h3 className="text-2xl font-black text-gray-800 mb-1 uppercase tracking-tight leading-none">
-                {item.name}
-            </h3>
-
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6">
-                {isPromo ? "COMBOS BIGA" : item.category?.replace("_", " ")}
-            </p>
-
-            {/* SOLO ADMIN: Costos y Márgenes */}
-            {viewMode === "admin" && (
-                <div className="flex items-center gap-4 mb-8 bg-white/50 p-4 rounded-2xl">
-                    <div className="flex-1">
-                        <p className="text-[10px] font-black text-gray-400 uppercase mb-1">Costo Real</p>
-                        <p className="font-bold text-gray-700">S/ {item.total_cost || "0.00"}</p>
+            <div className="p-8 pb-4 flex-1">
+                <div className="flex justify-between items-start mb-6">
+                    <div className={`p-3 rounded-2xl ${isHealthy ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"}`}>
+                        {isPromo ? <Star size={24} className="text-biga-orange" /> : <ChefHat size={24} />}
                     </div>
-                    <div className="flex-1 border-l-2 border-gray-100 pl-4">
-                        <p className="text-[10px] font-black text-gray-400 uppercase mb-1">Margen</p>
-                        <div className="flex items-center gap-1">
-                            <p className={`font-black text-xl ${textColor}`}>{item.margin_percentage}%</p>
-                            {isHealthy ? <CheckCircle2 size={16} className="text-green-500" /> : <AlertCircle size={16} className="text-amber-500" />}
+                    <div className="bg-biga-orange text-white px-4 py-2 rounded-xl shadow-lg shadow-orange-500/20 transform rotate-2 group-hover:rotate-0 transition-transform">
+                        <p className="text-[9px] font-black uppercase tracking-widest leading-none mb-1 opacity-80">Precio Venta</p>
+                        <p className="text-xl font-bold font-mono leading-none">S/ {priceToShow}</p>
+                    </div>
+                </div>
+
+                <h3 className="text-2xl font-black text-slate-900 mb-1 uppercase tracking-tighter leading-none italic">
+                    {item.name}
+                </h3>
+
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6">
+                    {isPromo ? "COMBOS BIGA" : item.category?.replace("_", " ")}
+                </p>
+
+                {/* SOLO ADMIN: Costos y Márgenes */}
+                {viewMode === "admin" && (
+                    <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <div className="flex-1">
+                            <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Costo Prod.</p>
+                            <p className="font-mono font-bold text-slate-700">S/ {item.total_cost || "0.00"}</p>
+                        </div>
+                        <div className="flex-1 flex flex-col items-end">
+                            <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Margen</p>
+                            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full font-black text-sm ${marginBg}`}>
+                                {item.margin_percentage}%
+                                {isHealthy ? <CheckCircle2 size={12} strokeWidth={3} /> : <AlertCircle size={12} strokeWidth={3} />}
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-
-            <div className="flex justify-between items-center text-gray-400 group-hover:text-gray-900 transition-colors pt-2 border-t border-gray-100">
-                <span className="text-[10px] font-black uppercase tracking-widest">
-                    {viewMode === "pos" ? "Añadir al pedido" : (isPromo ? "Ver detalle combo" : "Ajustar Receta")}
-                </span>
-                <ChevronRight size={18} />
+                )}
             </div>
 
-            {/* SOLO ADMIN: Botones de edición flotantes */}
+            {/* Footer optimizado para acción */}
+            <div className="bg-slate-50 p-5 flex justify-between items-center border-t border-slate-100 group-hover:bg-slate-100 transition-colors">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-biga-dark transition-colors">
+                    {viewMode === "pos" ? "Añadir al pedido" : (isPromo ? "Ver detalle combo" : "Ajustar Receta")}
+                </span>
+                <div className="bg-white p-2 rounded-full shadow-sm group-hover:translate-x-1 transition-transform">
+                    <ChevronRight size={16} className="text-biga-orange" />
+                </div>
+            </div>
+
+            {/* Botones de edición flotantes */}
             {viewMode === "admin" && (
-                <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute top-24 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                         onClick={(e) => { e.stopPropagation(); onEdit(item); }}
-                        className="p-2 bg-white shadow-md rounded-full text-blue-600 hover:bg-blue-50"
+                        className="p-3 bg-white shadow-xl rounded-2xl text-blue-600 hover:scale-110 transition-transform"
                     >
                         <Pencil size={16} />
                     </button>
                     <button
                         onClick={(e) => { e.stopPropagation(); onDelete(item.id, isPromo); }}
-                        className="p-2 bg-white shadow-md rounded-full text-red-600 hover:bg-red-50"
+                        className="p-3 bg-white shadow-xl rounded-2xl text-red-600 hover:scale-110 transition-transform"
                     >
                         <Trash2 size={16} />
                     </button>

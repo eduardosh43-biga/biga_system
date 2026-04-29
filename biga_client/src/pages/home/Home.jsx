@@ -73,13 +73,13 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen p-8 lg:p-16">
-      <header className="max-w-6xl mx-auto mb-16 flex justify-between items-center">
+    <div className="h-screen overflow-hidden bg-slate-210 p-6 lg:p-12 flex flex-col justify-center">
+      <header className="max-w-6xl w-full mx-auto mb-8 flex justify-between items-center shrink-0">
         <div>
-          <h1 className="text-6xl font-black text-biga-dark italic tracking-tighter uppercase">
+          <h1 className="text-5xl font-black text-biga-dark italic tracking-tighter uppercase leading-none">
             Hola, {user.name?.split(' ')[0]}<span className="text-biga-orange">!</span>
           </h1>
-          <p className="text-slate-400 font-bold uppercase text-xs tracking-[0.4em] mt-4">Bienvenido al Sistema Central de BIGA</p>
+          <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.4em] mt-2">Bienvenido al Sistema Central de BIGA</p>
         </div>
         <button 
           onClick={handleLogout}
@@ -89,31 +89,33 @@ const Home = () => {
         </button>
       </header>
 
-      <main className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <main className="max-w-6xl w-full mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
         {allowedOptions.map((option) => (
           <button
             key={option.id}
             onClick={() => navigate(option.path)}
-            className="group relative bg-white p-10 rounded-[3rem] shadow-xl shadow-slate-200/50 border border-slate-100 text-left transition-all hover:scale-105 hover:shadow-2xl active:scale-95 overflow-hidden"
+            className="group relative bg-white p-6 rounded-3xl shadow-lg shadow-slate-200/60 border border-slate-100 text-left transition-all hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] overflow-hidden flex items-center gap-6"
           >
-            <div className={`absolute top-0 right-0 w-32 h-32 ${option.color} opacity-[0.03] -mr-8 -mt-8 rounded-full transition-all group-hover:scale-150`}></div>
+            <div className={`absolute top-0 right-0 w-24 h-24 ${option.color} opacity-[0.03] -mr-6 -mt-6 rounded-full transition-all group-hover:scale-150`}></div>
             
-            <div className={`${option.color} text-white w-16 h-16 rounded-2xl flex items-center justify-center mb-8 shadow-lg transition-transform group-hover:rotate-6`}>
-              {option.icon}
+            <div className={`${option.color} text-white w-14 h-14 shrink-0 rounded-2xl flex items-center justify-center shadow-md transition-transform group-hover:rotate-3`}>
+              {React.cloneElement(option.icon, { size: 32 })}
             </div>
             
-            <h3 className="text-2xl font-black text-biga-dark uppercase italic tracking-tighter mb-2">{option.title}</h3>
-            <p className="text-slate-400 font-bold text-xs uppercase leading-relaxed">{option.desc}</p>
+            <div className="flex-1">
+              <h3 className="text-xl font-black text-biga-dark uppercase italic tracking-tighter leading-tight">{option.title}</h3>
+              <p className="text-slate-400 font-bold text-[10px] uppercase leading-relaxed mt-1">{option.desc}</p>
+            </div>
             
-            <div className="mt-8 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-biga-orange opacity-0 group-hover:opacity-100 transition-opacity">
-              Entrar al módulo <span>→</span>
+            <div className="text-biga-orange opacity-0 group-hover:opacity-100 transition-opacity pr-2">
+              <span className="text-xl">→</span>
             </div>
           </button>
         ))}
       </main>
 
-      <footer className="max-w-6xl mx-auto mt-20 text-center">
-        <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.5em]">BIGA PIZZERIA · GESTIÓN INTEGRAL</p>
+      <footer className="max-w-6xl w-full mx-auto mt-12 text-center shrink-0">
+        <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.5em]">BIGA PIZZERIA · GESTIÓN INTEGRAL</p>
       </footer>
     </div>
   );

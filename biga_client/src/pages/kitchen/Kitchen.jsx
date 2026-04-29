@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import KitchenCard from './components/KitchenCard';
-import { RefreshCcw } from 'lucide-react';
+import { RefreshCcw, Utensils } from 'lucide-react';
 import { createConsumer } from '@rails/actioncable';
 import api from '../../assets/services/api';
 
@@ -58,29 +58,40 @@ const Kitchen = () => {
     if (loading) return <div className="p-20 text-center font-black text-slate-400 italic">CALENTANDO EL HORNO...</div>;
 
     return (
-        <div className="min-h-screen bg-biga-dark p-8 no-scrollbar rounded-3xl m-2">
-            <header className="flex justify-between items-center mb-10 border-b-2 border-biga-orange/30 pb-6">
-                <div>
-                    <h1 className="text-5xl font-black text-white italic tracking-tighter uppercase">
-                        Cocina<span className="text-biga-orange">.</span>
-                    </h1>
-                    <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em] mt-2">Producción en tiempo real</p>
+        <div className="min-h-screen bg-slate-50 p-8 no-scrollbar">
+            <header className="flex justify-between items-center mb-10 border-b border-slate-200 pb-8">
+                <div className="flex items-center gap-6">
+                    <div>
+                        <h1 className="text-5xl font-black text-biga-dark italic tracking-tighter uppercase">
+                            Cocina<span className="text-biga-orange">.</span>
+                        </h1>
+                        <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em] mt-2 italic">Línea de producción activa</p>
+                    </div>
+                    <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-100">
+                        <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span>
+                        <span className="text-[10px] font-black uppercase text-emerald-600 tracking-widest">En Vivo</span>
+                    </div>
                 </div>
                 <button
                     onClick={fetchKitchenOrders}
-                    className="p-4 bg-white/5 text-white rounded-2xl hover:bg-biga-orange/20 hover:text-biga-orange border border-white/5 transition-all group"
+                    className="p-4 bg-white text-slate-400 rounded-2xl hover:text-biga-orange border border-slate-100 shadow-sm transition-all group active:scale-95"
                 >
-                    <RefreshCcw size={24} className="group-hover:rotate-180 transition-transform duration-500" />
+                    <RefreshCcw size={20} className="group-hover:rotate-180 transition-transform duration-500" />
                 </button>
             </header>
 
             {orders.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-64 text-slate-500">
-                    <p className="text-2xl font-black uppercase italic">No hay pedidos pendientes</p>
-                    <p className="text-sm">¡Buen trabajo, equipo!</p>
+                <div className="flex flex-col items-center justify-center py-20 px-10">
+                    <div className="max-w-md w-full border-2 border-dashed border-slate-200 rounded-[3rem] p-16 flex flex-col items-center bg-white/50 backdrop-blur-sm shadow-inner">
+                        <div className="bg-slate-100 p-8 rounded-full mb-8">
+                            <Utensils size={64} className="text-slate-300" />
+                        </div>
+                        <h2 className="text-2xl font-black uppercase italic text-slate-400 tracking-tight text-center">Todo en orden</h2>
+                        <p className="text-slate-300 font-bold uppercase text-[10px] tracking-widest mt-2">Esperando pedidos...</p>
+                    </div>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                     {orders.map(order => (
                         <KitchenCard
                             key={order.id}

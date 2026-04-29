@@ -106,14 +106,13 @@ const Menu = ({ viewMode = "admin", onItemClick }) => {
     <div className="p-6 max-w-7xl mx-auto text-slate-900">
       <div className="flex justify-between items-end mb-12">
         <div>
-          <h2 className="text-5xl font-black tracking-tighter">MENÚ</h2>
-          <p className="text-slate-400 font-bold uppercase text-xs">BIGA PIZZA POS</p>
+          <h2 className="text-5xl font-black tracking-tighter italic uppercase">MENÚ<span className="text-biga-orange">.</span></h2>
+          <p className="text-slate-600 font-bold uppercase text-[10px] tracking-[0.4em] mt-2">BIGA PIZZA POS</p>
         </div>
         {viewMode === "admin" && (
           <button
             onClick={() => activeCategory === "promotion" ? setIsPromoModalOpen(true) : setIsRecipeModalOpen(true)}
-            style={{ backgroundColor: '#f5821f' }}
-            className="text-white px-8 py-4 rounded-2xl font-black shadow-xl hover:bg-[#1a1a1a] transition-all flex items-center gap-3 uppercase text-xs active:scale-95"
+            className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-4 rounded-2xl font-black shadow-lg shadow-orange-200 hover:scale-105 transition-all flex items-center gap-3 uppercase text-xs active:scale-95"
           >
             <Plus size={20} /> {activeCategory === "promotion" ? "Nueva Promo" : "Nuevo Producto"}
           </button>

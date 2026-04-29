@@ -9,7 +9,7 @@ const CategoryTabs = ({ tabs, activeCategory, setActiveCategory }) => {
                     onClick={() => setActiveCategory(tab.id)}
                     className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black text-xs uppercase tracking-widest transition-all whitespace-nowrap
             ${activeCategory === tab.id    
-                            ? "bg-gray-900 text-white shadow-lg scale-105"
+                            ? "bg-slate-800 text-white shadow-lg scale-105"
                             : "bg-white text-gray-400 hover:bg-gray-50 border-2 border-transparent"
                         }`}
                 >
