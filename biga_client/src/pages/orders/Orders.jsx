@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import OrderCard from './components/OrderCard';
 import OrderDetailModal from './components/OrderDetailModal';
 import { useNavigate } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Plus, Clock } from 'lucide-react';
 import api from '../../assets/services/api';
 
 const Orders = () => {
@@ -104,19 +104,18 @@ const Orders = () => {
   };
 
   return (
-    <div className="p-8 bg-slate-300 min-h-screen ml-4">
-      <div className="flex justify-between items-end mb-12 border-b-2 border-slate-100 pb-8">
+    <div className="p-8 bg-slate-200 min-h-screen ml-4">
+      <div className="flex justify-between items-center mb-12 py-4">
         <div>
-          <h1 className="text-5xl font-black text-biga-dark tracking-tighter uppercase leading-none italic">
+          <h1 className="text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none italic">
             Panel de Pedidos<span className="text-biga-orange">.</span>
           </h1>
-          <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.4em] mt-3">BIGA PIZZERIA · Central de Comandas</p>
+          <p className="text-slate-600 font-bold uppercase text-[10px] tracking-[0.4em] mt-3">BIGA PIZZERIA · Central de Comandas</p>
         </div>
 
         <button
           onClick={() => navigate("/orders/new")}
-          style={{ backgroundColor: '#f5821f' }}
-          className="text-white px-10 py-5 rounded-[2rem] font-black shadow-2xl hover:scale-105 hover:bg-[#1a1a1a] transition-all flex items-center gap-3 uppercase text-xs active:scale-95"
+          className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-10 py-5 rounded-2xl font-black shadow-lg shadow-orange-200 hover:scale-105 transition-all flex items-center gap-3 uppercase text-xs active:scale-95"
         >
           <Plus size={24} strokeWidth={3} /> Nuevo Pedido
         </button>
@@ -126,28 +125,35 @@ const Orders = () => {
       <section className="mb-20">
         <div className="flex items-center gap-4 mb-10">
           <div className="h-3 w-12 bg-biga-orange rounded-full"></div>
-          <h2 className="text-3xl font-black tracking-tighter uppercase italic text-biga-dark">Pendientes de Cocina</h2>
+          <h2 className="text-3xl font-black tracking-tighter uppercase italic text-slate-900">Pendientes de Cocina</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {pendingOrders.map(order => (
-            <OrderCard
-              key={order.id}
-              order={order}
-              onDetail={handleDetail}
-              onDelete={handleDelete}
-              onEdit={handleEdit}
-              onComplete={handleComplete}
-            />
-          ))}
-        </div>
+        {pendingOrders.length === 0 ? (
+          <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-slate-300 rounded-[2.5rem] bg-white/50 shadow-inner">
+            <Clock size={48} className="text-slate-300 mb-4" />
+            <p className="text-xl font-black text-slate-400 uppercase italic tracking-tight">Sin pedidos en preparación</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {pendingOrders.map(order => (
+              <OrderCard
+                key={order.id}
+                order={order}
+                onDetail={handleDetail}
+                onDelete={handleDelete}
+                onEdit={handleEdit}
+                onComplete={handleComplete}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* SECCIÓN 2: HISTORIAL (TODOS LOS DEMÁS) */}
       <section className="opacity-80">
         <div className="flex items-center gap-4 mb-8">
-          <div className="h-1 w-8 bg-slate-300 rounded-full"></div>
-          <h2 className="text-xl font-black tracking-tighter uppercase italic text-slate-400">Historial Reciente</h2>
+          <div className="h-1 w-8 bg-slate-400 rounded-full"></div>
+          <h2 className="text-xl font-black tracking-tighter uppercase italic text-slate-500">Historial Reciente</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {historyOrders.slice(0, 8).map(order => (

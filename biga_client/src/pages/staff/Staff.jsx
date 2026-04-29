@@ -69,11 +69,11 @@ const Staff = () => {
     }
   };
 
-  const getRoleIcon = (role) => {
+  const getRoleConfig = (role) => {
     switch (role) {
-      case 'admin': return <Shield className="text-red-500" size={16} />;
-      case 'cook': return <ChefHat className="text-orange-500" size={16} />;
-      default: return <User className="text-blue-500" size={16} />;
+      case 'admin': return { icon: <Shield size={20} />, color: "bg-purple-100 text-purple-600", label: "ADMIN" };
+      case 'cook': return { icon: <ChefHat size={20} />, color: "bg-orange-100 text-orange-600", label: "CHEF" };
+      default: return { icon: <User size={20} />, color: "bg-blue-100 text-blue-600", label: "MESERO" };
     }
   };
 
@@ -81,59 +81,66 @@ const Staff = () => {
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
-      <header className="flex justify-between items-end mb-12 border-b-2 border-slate-100 pb-8">
+      <header className="flex justify-between items-center mb-12 py-4">
         <div>
-          <h1 className="text-5xl font-black text-biga-dark tracking-tighter uppercase italic">
+          <h1 className="text-5xl font-black text-slate-900 tracking-tighter uppercase italic">
             Staff<span className="text-biga-orange">.</span>
           </h1>
-          <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.4em] mt-3">Gestión de Accesos y Equipo</p>
+          <p className="text-slate-600 font-bold uppercase text-[10px] tracking-[0.4em] mt-2">Gestión de Accesos y Equipo</p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
-          style={{ backgroundColor: '#f5821f' }}
-          className="text-white px-8 py-4 rounded-2xl font-black shadow-xl hover:bg-[#1a1a1a] transition-all flex items-center gap-3 uppercase text-xs active:scale-95"
+          className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-4 rounded-2xl font-black shadow-lg shadow-orange-200 hover:scale-105 transition-all flex items-center gap-3 uppercase text-xs active:scale-95"
         >
           <UserPlus size={20} /> Nuevo Miembro
         </button>
       </header>
 
-      <div className="bg-white rounded-[3rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-xl border border-slate-300/50 overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-50 border-b border-slate-100">
-              <th className="p-6 text-[10px] font-black uppercase text-slate-400 tracking-widest text-center w-20">Rol</th>
-              <th className="p-6 text-[10px] font-black uppercase text-slate-400 tracking-widest">Nombre</th>
-              <th className="p-6 text-[10px] font-black uppercase text-slate-400 tracking-widest">Email</th>
-              <th className="p-6 text-[10px] font-black uppercase text-slate-400 tracking-widest">Fecha Ingreso</th>
+              <th className="p-6 text-[10px] font-black uppercase text-slate-500 tracking-widest">Miembro</th>
+              <th className="p-6 text-[10px] font-black uppercase text-slate-500 tracking-widest">Rol</th>
+              <th className="p-6 text-[10px] font-black uppercase text-slate-500 tracking-widest text-right">Fecha Ingreso</th>
               <th className="p-6 text-center w-24"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {users.map(user => (
-              <tr key={user.id} className="hover:bg-slate-50 transition-colors group">
-                <td className="p-6">
-                  <div className="flex justify-center">
-                    <div className="p-3 bg-white rounded-xl shadow-sm border border-slate-100 group-hover:scale-110 transition-transform">
-                      {getRoleIcon(user.role)}
+            {users.map(user => {
+              const config = getRoleConfig(user.role);
+              return (
+                <tr key={user.id} className="hover:bg-slate-50 transition-colors group">
+                  <td className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 ${config.color} rounded-full flex items-center justify-center shadow-sm border border-white`}>
+                        {config.icon}
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-900 uppercase tracking-tight leading-none mb-1">{user.name}</p>
+                        <p className="text-xs text-slate-500">{user.email}</p>
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td className="p-6">
-                  <p className="font-black text-biga-dark uppercase italic tracking-tighter text-lg leading-tight">{user.name}</p>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{user.role}</p>
-                </td>
-                <td className="p-6 font-bold text-slate-500 text-sm">{user.email}</td>
-                <td className="p-6 font-bold text-slate-300 text-xs uppercase">{new Date(user.created_at).toLocaleDateString()}</td>
-                <td className="p-6 text-center">
-                  <button 
-                    onClick={() => handleDelete(user.id)}
-                    className="p-3 text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all rounded-xl"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="p-6">
+                    <span className={`px-3 py-1 rounded-lg text-[10px] font-black tracking-widest ${config.color}`}>
+                      {config.label}
+                    </span>
+                  </td>
+                  <td className="p-6 text-right font-mono font-bold text-slate-400 text-xs">
+                    {new Date(user.created_at).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                  </td>
+                  <td className="p-6 text-center">
+                    <button 
+                      onClick={() => handleDelete(user.id)}
+                      className="p-3 text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all rounded-xl"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -217,8 +224,7 @@ const Staff = () => {
 
               <button 
                 type="submit"
-                style={{ backgroundColor: '#f5821f' }}
-                className="w-full mt-10 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-biga-dark transition-all active:scale-95"
+                className="w-full mt-10 bg-gradient-to-r from-orange-500 to-orange-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-orange-200 hover:scale-[1.02] transition-all active:scale-95"
               >
                 Crear Miembro del Staff
               </button>
