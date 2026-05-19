@@ -3,6 +3,7 @@ import KitchenCard from './components/KitchenCard';
 import { RefreshCcw, Utensils } from 'lucide-react';
 import { createConsumer } from '@rails/actioncable';
 import api from '../../assets/services/api';
+import { toast } from '../../assets/services/notifications';
 
 const Kitchen = () => {
     const [orders, setOrders] = useState([]);
@@ -17,8 +18,11 @@ const Kitchen = () => {
                 // FILTRO CRÍTICO: Solo lo que la cocina debe ver
                 const onlyPending = data.filter(o => o.status === 'pending');
                 setOrders(onlyPending);
+            } else {
+                toast("Error al sincronizar cocina", "error");
             }
         } catch (error) {
+            toast("Error de conexión", "error");
             console.error("Error en cocina:", error);
         } finally {
             setLoading(false);
@@ -34,6 +38,7 @@ const Kitchen = () => {
         const subscription = consumer.subscriptions.create('KitchenChannel', {
             received: (data) => {
                 console.log("¡Nueva orden recibida!", data);
+                toast(`¡Nuevo pedido! #${data.order.daily_id}`, "info");
                 setOrders(prev => [data.order, ...prev]);
             }
         });
@@ -49,8 +54,14 @@ const Kitchen = () => {
                 method: 'PATCH',
                 body: { order: { status: 'ready' } }
             });
-            if (res && res.ok) await fetchKitchenOrders();
+            if (res && res.ok) {
+                toast("Pedido listo para despacho", "success");
+                await fetchKitchenOrders();
+            } else {
+                toast("Error al marcar como listo", "error");
+            }
         } catch (error) {
+            toast("Error de conexión", "error");
             console.error("Error al despachar:", error);
         }
     };

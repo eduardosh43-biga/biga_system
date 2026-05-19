@@ -20,4 +20,10 @@ class ApplicationController < ActionController::API
   rescue ActiveRecord::RecordNotFound, JWT::DecodeError
     render json: { errors: 'Token inválido o expirado' }, status: :unauthorized
   end
+
+  def authorize_admin!
+    unless current_user&.admin?
+      render json: { error: "Acceso denegado. Se requiere rol de Administrador." }, status: :forbidden
+    end
+  end
 end

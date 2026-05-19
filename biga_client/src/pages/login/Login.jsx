@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../assets/services/api';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -12,21 +13,19 @@ const Login = () => {
         setError('');
 
         try {
-            const response = await fetch('http://localhost:3000/api/v1/auth/login', {
+            const response = await api('/auth/login', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
+                body: { email, password },
             });
 
-            const data = await response.json();
-
-            if (response.ok) {
-                
+            if (response && response.ok) {
+                const data = await response.json();
                 localStorage.setItem('token', data.token);                
                 localStorage.setItem('user', JSON.stringify(data.user));                
                 navigate('/orders');
             } else {
-                setError(data.error || 'Credenciales inválidas');
+                const data = await response?.json();
+                setError(data?.error || 'Credenciales inválidas');
             }
         } catch (err) {
             setError('Error de conexión con el servidor');

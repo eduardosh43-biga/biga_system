@@ -6,6 +6,8 @@ import IngredientModal from "./components/IngredientModal";
 import PromoModal from "./components/PromoModal";
 import { Pizza, Star, Utensils, GlassWater, BottleWine, CakeSlice, Plus } from "lucide-react";
 import api from "../../assets/services/api";
+import { toast } from "../../assets/services/notifications";
+import Modal from "../../components/Modal";
 
 const Menu = ({ viewMode = "admin", onItemClick }) => {
   const [recipes, setRecipes] = useState([]);
@@ -20,6 +22,9 @@ const Menu = ({ viewMode = "admin", onItemClick }) => {
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [isPromoModalOpen, setIsPromoModalOpen] = useState(false);
   const [promoToEdit, setPromoToEdit] = useState(null);
+
+  // Estado para Modal de Confirmación
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, onConfirm: null, title: '', message: '' });
 
   const categoryTabs = [
     { id: "pizza", label: "Pizzas", icon: <Pizza size={16} /> },
@@ -52,8 +57,11 @@ const Menu = ({ viewMode = "admin", onItemClick }) => {
         setRecipes(recipesData);
         setIngredients(ingredientsData);
         setPromotions(promotionsData);
+      } else {
+        toast("Error al cargar datos", "error");
       }
     } catch (error) {
+      toast("Error de conexión", "error");
       console.error("Error cargando datos de BIGA:", error);
     } finally {
       setLoading(false);
@@ -73,25 +81,32 @@ const Menu = ({ viewMode = "admin", onItemClick }) => {
     }
   };
 
-  const handleDelete = async (id, isPromo) => {
+  const handleDelete = (id, isPromo) => {
     const type = isPromo ? "promotions" : "recipes";
     const label = isPromo ? "esta Promoción" : "este Producto";
 
-    if (window.confirm(`¿Seguro que quieres eliminar ${label} de BIGA?`)) {
-      try {
-        const res = await api(`/${type}/${id}`, {
-          method: "DELETE"
-        });
+    setConfirmModal({
+      isOpen: true,
+      title: "Eliminar Ítem",
+      message: `¿Seguro que quieres eliminar ${label} de BIGA?`,
+      onConfirm: async () => {
+        try {
+          const res = await api(`/${type}/${id}`, {
+            method: "DELETE"
+          });
 
-        if (res && res.ok) {
-          await fetchData();
-        } else {
-          alert("Error al eliminar");
+          if (res && res.ok) {
+            toast("Eliminado correctamente", "success");
+            await fetchData();
+          } else {
+            toast("No se pudo eliminar", "error");
+          }
+        } catch (error) {
+          toast("Error de conexión", "error");
+          console.error("Error de conexión:", error);
         }
-      } catch (error) {
-        console.error("Error de conexión:", error);
       }
-    }
+    });
   };
 
   const allItems = [
@@ -104,6 +119,16 @@ const Menu = ({ viewMode = "admin", onItemClick }) => {
 
   return (
     <div className="p-6 max-w-7xl mx-auto text-slate-900">
+      <Modal 
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        title={confirmModal.title}
+        type="danger"
+        onConfirm={confirmModal.onConfirm}
+      >
+        {confirmModal.message}
+      </Modal>
+
       <div className="flex justify-between items-end mb-12">
         <div>
           <h2 className="text-5xl font-black tracking-tighter italic uppercase">MENÚ<span className="text-biga-orange">.</span></h2>

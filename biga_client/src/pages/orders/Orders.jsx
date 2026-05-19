@@ -4,6 +4,8 @@ import OrderDetailModal from './components/OrderDetailModal';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Clock } from 'lucide-react';
 import api from '../../assets/services/api';
+import { toast } from '../../assets/services/notifications';
+import Modal from '../../components/Modal';
 
 const Orders = () => {
   const navigate = useNavigate();
@@ -11,6 +13,9 @@ const Orders = () => {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+  // Estado para Modal de Confirmación
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, onConfirm: null, title: '', message: '' });
   const pendingOrders = orders
     .filter(o => o.status === 'pending' || o.status === "ready")
     .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
@@ -29,10 +34,12 @@ const Orders = () => {
         setOrders(Array.isArray(data) ? data : []);
       } else {
         setOrders([]);
+        toast("Error al cargar pedidos", "error");
       }
     } catch (error) {
       console.error("Error de red:", error);
       setOrders([]);
+      toast("Error de conexión", "error");
     }
   };
 
@@ -47,24 +54,33 @@ const Orders = () => {
   };
 
   // 3. LOGICA: ELIMINAR
-  const handleDelete = async (id) => {
-    if (window.confirm("¿Anular este pedido? El registro quedará guardado como 'Anulado'.")) {
-      try {
-        const response = await api(`/orders/${id}`, {
-          method: 'DELETE', 
-        });
-
-        if (response && response.ok) {          
-          setOrders(prevOrders =>
-            prevOrders.map(order =>
-              order.id === id ? { ...order, status: 'cancelled' } : order
-            )
-          );
+  const handleDelete = (id) => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Anular Pedido",
+      message: "¿Anular este pedido? El registro quedará guardado como 'Anulado'.",
+      onConfirm: async () => {
+        try {
+          const response = await api(`/orders/${id}`, {
+            method: 'DELETE', 
+          });
+  
+          if (response && response.ok) {
+            toast("Pedido anulado", "success");
+            setOrders(prevOrders =>
+              prevOrders.map(order =>
+                order.id === id ? { ...order, status: 'cancelled' } : order
+              )
+            );
+          } else {
+            toast("No se pudo anular", "error");
+          }
+        } catch (error) {
+          toast("Error de conexión", "error");
+          console.error("Error al anular:", error);
         }
-      } catch (error) {
-        console.error("Error al anular:", error);
       }
-    }
+    });
   };
 
   // 4. LOGICA: EDITAR (Redirección al flujo de venta)
@@ -95,16 +111,32 @@ const Orders = () => {
       });
 
       if (res && res.ok) {
-        setShowPaymentModal(false);
+        toast("Pedido finalizado", "success");
         await fetchOrders(); 
+      } else {
+        const data = await res?.json();
+        toast(data?.errors || "Error al cerrar pedido", "error");
       }
     } catch (error) {
+      toast("Error de conexión", "error");
       console.error("Error al cerrar pedido:", error);
+    } finally {
+      setShowPaymentModal(false);
     }
   };
 
   return (
     <div className="p-8 bg-slate-200 min-h-screen ml-4">
+      <Modal 
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        title={confirmModal.title}
+        type="danger"
+        onConfirm={confirmModal.onConfirm}
+      >
+        {confirmModal.message}
+      </Modal>
+
       <div className="flex justify-between items-center mb-12 py-4">
         <div>
           <h1 className="text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none italic">
@@ -167,33 +199,32 @@ const Orders = () => {
         </div>
       </section>
 
-      {showPaymentModal && (
-        <div className="fixed inset-0 bg-biga-dark/90 backdrop-blur-md z-[300] flex items-center justify-center p-4">
-          <div className="bg-white p-10 rounded-[3rem] w-full max-w-sm text-center shadow-2xl border-4 border-biga-orange/20">
-            <div className="w-20 h-20 bg-biga-orange/10 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">💰</div>
-            <h3 className="text-2xl font-black uppercase mb-2 tracking-tighter text-biga-dark italic">Cerrar Pedido</h3>
-            <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mb-8">Selecciona el método de pago</p>
-            
-            <div className="grid gap-4">
-              {['efectivo', 'yape', 'plin'].map(m => (
-                <button
-                  key={m}
-                  onClick={() => executeFinishOrder(selectedOrder.id, m)}
-                  className="w-full py-5 bg-slate-50 border-2 border-slate-100 hover:border-biga-orange hover:bg-biga-orange/5 rounded-2xl font-black uppercase text-xs transition-all text-biga-dark hover:text-biga-orange"
-                >
-                  {m}
-                </button>
-              ))}
-            </div>
-            <button 
-                onClick={() => setShowPaymentModal(false)} 
-                className="mt-8 text-slate-300 font-black text-[10px] uppercase tracking-widest hover:text-red-500 transition-colors"
-            >
-                Volver Atrás
-            </button>
+      <Modal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        title="Cerrar Pedido"
+        type="info"
+        confirmText="Confirmar Pago"
+        onConfirm={null} // El pago se maneja por los botones internos por ahora, o podríamos refactorizarlo
+      >
+        <div className="text-center">
+          <div className="w-20 h-20 bg-biga-orange/10 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">💰</div>
+          <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mb-8">Selecciona el método de pago</p>
+          
+          <div className="grid gap-4">
+            {['efectivo', 'yape', 'plin'].map(m => (
+              <button
+                key={m}
+                onClick={() => executeFinishOrder(selectedOrder.id, m)}
+                className="w-full py-5 bg-slate-50 border-2 border-slate-100 hover:border-biga-orange hover:bg-biga-orange/5 rounded-2xl font-black uppercase text-xs transition-all text-biga-dark hover:text-biga-orange"
+              >
+                {m}
+              </button>
+            ))}
           </div>
         </div>
-      )}
+      </Modal>
+
       <OrderDetailModal
         isOpen={isDetailOpen}
         onClose={() => setIsDetailOpen(false)}

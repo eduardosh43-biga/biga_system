@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { UserPlus, Trash2, Shield, User, ChefHat, Mail, Lock, X } from 'lucide-react';
 import api from '../../assets/services/api';
+import { toast } from '../../assets/services/notifications';
+import Modal from '../../components/Modal';
 
 const Staff = () => {
   const [users, setUsers] = useState([]);
@@ -13,6 +15,9 @@ const Staff = () => {
     role: 'waiter'
   });
   const [error, setError] = useState(null);
+
+  // Estado para Modal de Confirmación
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, onConfirm: null, title: '', message: '' });
 
   useEffect(() => {
     fetchUsers();
@@ -41,32 +46,43 @@ const Staff = () => {
         body: { user: formData }
       });
       if (res && res.ok) {
+        toast("Usuario creado", "success");
         setIsModalOpen(false);
         setFormData({ name: '', email: '', password: '', role: 'waiter' });
         await fetchUsers();
       } else if (res) {
         const data = await res.json();
-        setError(data.errors?.join(", ") || "Error al crear usuario");
+        const errorMsg = data.errors?.join(", ") || "Error al crear usuario";
+        setError(errorMsg);
+        toast(errorMsg, "error");
       }
     } catch (err) {
       setError("Error de conexión");
+      toast("Error de conexión", "error");
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("¿Seguro que quieres eliminar a este miembro del staff? Perderá acceso inmediato.")) {
-      try {
-        const res = await api(`/users/${id}`, { method: 'DELETE' });
-        if (res && res.ok) {
-          await fetchUsers();
-        } else if (res) {
-          const data = await res.json();
-          alert(data.errors || "No se pudo eliminar");
+  const handleDelete = (id) => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Eliminar Staff",
+      message: "¿Seguro que quieres eliminar a este miembro del staff? Perderá acceso inmediato.",
+      onConfirm: async () => {
+        try {
+          const res = await api(`/users/${id}`, { method: 'DELETE' });
+          if (res && res.ok) {
+            toast("Usuario eliminado", "success");
+            await fetchUsers();
+          } else if (res) {
+            const data = await res.json();
+            toast(data.errors || "No se pudo eliminar", "error");
+          }
+        } catch (err) {
+          toast("Error de conexión", "error");
+          console.error(err);
         }
-      } catch (err) {
-        console.error(err);
       }
-    }
+    });
   };
 
   const getRoleConfig = (role) => {
@@ -81,6 +97,16 @@ const Staff = () => {
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
+      <Modal 
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        title={confirmModal.title}
+        type="danger"
+        onConfirm={confirmModal.onConfirm}
+      >
+        {confirmModal.message}
+      </Modal>
+
       <header className="flex justify-between items-center mb-12 py-4">
         <div>
           <h1 className="text-5xl font-black text-slate-900 tracking-tighter uppercase italic">
@@ -146,92 +172,86 @@ const Staff = () => {
       </div>
 
       {/* MODAL NUEVO USUARIO */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-biga-dark/90 backdrop-blur-md z-[500] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[3rem] w-full max-w-lg shadow-2xl border-4 border-biga-orange/20 overflow-hidden relative">
-            <button onClick={() => setIsModalOpen(false)} className="absolute top-8 right-8 text-slate-300 hover:text-biga-dark transition-colors">
-              <X size={24} />
-            </button>
-            
-            <form onSubmit={handleSubmit} className="p-12">
-              <div className="mb-10 text-center">
-                <div className="w-16 h-16 bg-biga-orange/10 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl">🍕</div>
-                <h3 className="text-3xl font-black text-biga-dark uppercase italic tracking-tighter">Nuevo Miembro</h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-2">Registrar acceso al sistema</p>
-              </div>
-
-              {error && <p className="mb-6 p-4 bg-red-50 text-red-500 rounded-2xl text-xs font-bold text-center border border-red-100">{error}</p>}
-
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-[10px] font-black uppercase text-slate-400 mb-2 ml-4 tracking-widest">Nombre Completo</label>
-                  <div className="relative">
-                    <User className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                    <input 
-                      required
-                      type="text" 
-                      className="w-full pl-14 pr-6 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:border-biga-orange focus:bg-white outline-none font-bold transition-all"
-                      placeholder="Ej: Juan Perez"
-                      value={formData.name}
-                      onChange={e => setFormData({...formData, name: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-black uppercase text-slate-400 mb-2 ml-4 tracking-widest">Email Corporativo</label>
-                  <div className="relative">
-                    <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                    <input 
-                      required
-                      type="email" 
-                      className="w-full pl-14 pr-6 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:border-biga-orange focus:bg-white outline-none font-bold transition-all"
-                      placeholder="email@biga.com"
-                      value={formData.email}
-                      onChange={e => setFormData({...formData, email: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-black uppercase text-slate-400 mb-2 ml-4 tracking-widest">Contraseña Inicial</label>
-                  <div className="relative">
-                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                    <input 
-                      required
-                      type="password" 
-                      className="w-full pl-14 pr-6 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:border-biga-orange focus:bg-white outline-none font-bold transition-all"
-                      placeholder="Min 6 caracteres"
-                      value={formData.password}
-                      onChange={e => setFormData({...formData, password: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-black uppercase text-slate-400 mb-2 ml-4 tracking-widest">Rol en el Equipo</label>
-                  <select 
-                    className="w-full px-6 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:border-biga-orange focus:bg-white outline-none font-bold transition-all appearance-none cursor-pointer"
-                    value={formData.role}
-                    onChange={e => setFormData({...formData, role: e.target.value})}
-                  >
-                    <option value="waiter">Mesero / Ventas</option>
-                    <option value="cook">Cocinero</option>
-                    <option value="admin">Administrador</option>
-                  </select>
-                </div>
-              </div>
-
-              <button 
-                type="submit"
-                className="w-full mt-10 bg-gradient-to-r from-orange-500 to-orange-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-orange-200 hover:scale-[1.02] transition-all active:scale-95"
-              >
-                Crear Miembro del Staff
-              </button>
-            </form>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Nuevo Miembro"
+        type="info"
+        confirmText="Crear Miembro"
+        onConfirm={() => {
+          document.getElementById('new-staff-form')?.requestSubmit();
+        }}
+      >
+        <form id="new-staff-form" onSubmit={handleSubmit} className="p-2">
+          <div className="mb-10 text-center">
+            <div className="w-16 h-16 bg-biga-orange/10 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl">🍕</div>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-2">Registrar acceso al sistema</p>
           </div>
-        </div>
-      )}
+
+          {error && <p className="mb-6 p-4 bg-red-50 text-red-500 rounded-2xl text-xs font-bold text-center border border-red-100">{error}</p>}
+
+          <div className="space-y-6">
+            <div>
+              <label className="block text-[10px] font-black uppercase text-slate-400 mb-2 ml-4 tracking-widest">Nombre Completo</label>
+              <div className="relative">
+                <User className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                <input 
+                  required
+                  type="text" 
+                  className="w-full pl-14 pr-6 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:border-biga-orange focus:bg-white outline-none font-bold transition-all"
+                  placeholder="Ej: Juan Perez"
+                  value={formData.name}
+                  onChange={e => setFormData({...formData, name: e.target.value})}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-black uppercase text-slate-400 mb-2 ml-4 tracking-widest">Email Corporativo</label>
+              <div className="relative">
+                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                <input 
+                  required
+                  type="email" 
+                  className="w-full pl-14 pr-6 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:border-biga-orange focus:bg-white outline-none font-bold transition-all"
+                  placeholder="email@biga.com"
+                  value={formData.email}
+                  onChange={e => setFormData({...formData, email: e.target.value})}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-black uppercase text-slate-400 mb-2 ml-4 tracking-widest">Contraseña Inicial</label>
+              <div className="relative">
+                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                <input 
+                  required
+                  type="password" 
+                  className="w-full pl-14 pr-6 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:border-biga-orange focus:bg-white outline-none font-bold transition-all"
+                  placeholder="Min 6 caracteres"
+                  value={formData.password}
+                  onChange={e => setFormData({...formData, password: e.target.value})}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-black uppercase text-slate-400 mb-2 ml-4 tracking-widest">Rol en el Equipo</label>
+              <select 
+                className="w-full px-6 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:border-biga-orange focus:bg-white outline-none font-bold transition-all appearance-none cursor-pointer"
+                value={formData.role}
+                onChange={e => setFormData({...formData, role: e.target.value})}
+              >
+                <option value="waiter">Mesero / Ventas</option>
+                <option value="cook">Cocinero</option>
+                <option value="admin">Administrador</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </Modal>
+
     </div>
   );
 };

@@ -34,12 +34,6 @@ class Api::V1::UsersController < ApplicationController
     params.require(:user).permit(:name, :email, :password, :role)
   end
 
-  def authorize_admin!
-    unless current_user.admin?
-      render json: { error: "Acceso denegado. Se requiere rol de Administrador." }, status: :forbidden
-    end
-  end
-
   def user_as_json(user)
     {
       id: user.id,
